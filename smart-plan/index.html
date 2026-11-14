@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>T计划智能版 · 课表与学习计划</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/app.js" defer></script>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><span class="logo">T</span><div><strong>T计划智能版</strong><small>课表、任务、分析</small></div></div>
+  <nav aria-label="主导航">
+    <button data-page="today" class="active">今日</button>
+    <button data-page="schedule">我的课表</button>
+    <button data-page="tasks">学习计划</button>
+    <button data-page="insights">智能分析</button>
+    <button data-page="data">数据管理</button>
+  </nav>
+  <p class="side-note">个人记录仅保存在此浏览器。只有主动勾选 AI 识别或点击分析，相关内容才会发送到所配置的模型接口。</p>
+</aside>
+<main id="app" tabindex="-1"></main>
+<input id="file" type="file" accept=".xlsx,.docx,.csv,.txt,.pdf,.png,.jpg,.jpeg,.svg" hidden>
+<input id="backup" type="file" accept=".json,application/json" hidden>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

@@ -1,0 +1,1217 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>T计划</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&display=swap">
+<style>
+/* Layout: 左侧"任务侧栏" + 右侧单焦点主区。首页以一个输入框为中心；计时是主角；其余页面是窄栏工作区。 */
+:root{
+ --bg:#FAF9F5;--side:#F3F1EA;--panel:#FFFFFF;--soft:#ECE9E0;--line:#E2DED3;
+ --text:#1F1E1D;--t2:#5B5953;--t3:#75736C;
+ --accent:#D97757;--accent-ink:#AF4F2C;--accent-soft:#F7E6DC;--btn:#BF5D39;--on-btn:#FFFFFF;
+ --ok:#4F7A43;--ok-soft:#E2EBDB;--warn:#94600F;--warn-soft:#F5EAD2;--bad:#B3412E;--bad-soft:#F6DFD9;
+ --c-school:#C96442;--c-math:#5878A3;--c-english:#668A55;--c-other:#A9853A;--c-legacy:#8E8A80;
+ --scrim:rgba(31,30,29,.32);--shadow:0 2px 14px rgba(60,45,30,.07);--pop-shadow:0 10px 30px rgba(60,45,30,.16);
+ --serif:"Noto Serif SC","Songti SC","STSong","SimSun",Georgia,serif;
+ --sans:system-ui,-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+ --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+ color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#262624;--side:#1F1E1D;--panel:#30302E;--soft:#3A3A37;--line:#46453F;--text:#ECEAE3;--t2:#BCBAB2;--t3:#9C9A91;
+ --accent:#D97757;--accent-ink:#EB9A78;--accent-soft:#4A3229;--btn:#C2603B;--on-btn:#FFFFFF;
+ --ok:#97BA86;--ok-soft:#2E3A2A;--warn:#E2B263;--warn-soft:#3F3524;--bad:#E8806C;--bad-soft:#4A2B25;
+ --c-school:#DE8762;--c-math:#8CA8CC;--c-english:#9BBC86;--c-other:#D2AC5E;--c-legacy:#A29E93;
+ --scrim:rgba(0,0,0,.5);--shadow:0 2px 14px rgba(0,0,0,.28);--pop-shadow:0 10px 30px rgba(0,0,0,.45);color-scheme:dark}}
+:root[data-theme="dark"]{
+ --bg:#262624;--side:#1F1E1D;--panel:#30302E;--soft:#3A3A37;--line:#46453F;--text:#ECEAE3;--t2:#BCBAB2;--t3:#9C9A91;
+ --accent:#D97757;--accent-ink:#EB9A78;--accent-soft:#4A3229;--btn:#C2603B;--on-btn:#FFFFFF;
+ --ok:#97BA86;--ok-soft:#2E3A2A;--warn:#E2B263;--warn-soft:#3F3524;--bad:#E8806C;--bad-soft:#4A2B25;
+ --c-school:#DE8762;--c-math:#8CA8CC;--c-english:#9BBC86;--c-other:#D2AC5E;--c-legacy:#A29E93;
+ --scrim:rgba(0,0,0,.5);--shadow:0 2px 14px rgba(0,0,0,.28);--pop-shadow:0 10px 30px rgba(0,0,0,.45);color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14.5px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+h1,h2,h3{font-family:var(--serif);font-weight:500;text-wrap:balance;margin:0}
+.num,.tab{font-variant-numeric:tabular-nums}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:268px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:100%;overflow:hidden}
+aside{background:var(--side);border-right:1px solid var(--line);padding:12px 10px 10px;display:flex;flex-direction:column;gap:2px;overflow:auto;min-height:0}
+.brandrow{display:flex;align-items:center;gap:6px;padding:0 4px 10px}
+.brand{font:500 21px/1 var(--serif);letter-spacing:.02em}
+.brand b{color:var(--accent);font-weight:600}
+.grow{flex:1}
+.ib{width:34px;height:34px;border:0;border-radius:9px;background:none;display:grid;place-items:center;color:var(--t2)}
+.ib:hover{background:var(--soft)}
+.nav{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border:0;border-radius:9px;background:none;color:var(--text);text-align:left}
+.nav svg{color:var(--t2)}
+.nav:hover{background:var(--soft)}
+.nav.on{background:var(--soft);font-weight:600}
+.nav .k{margin-left:auto;font-size:12px;color:var(--t3)}
+.lbl{font-size:12.5px;color:var(--t3);padding:16px 10px 4px;display:flex;justify-content:space-between;letter-spacing:.04em}
+.grp{min-height:24px;border-radius:9px}
+.grp.over{background:var(--accent-soft)}
+.item{display:flex;align-items:center;gap:9px;padding:6px 8px 6px 10px;border-radius:9px;cursor:pointer;user-select:none}
+.item:hover{background:var(--soft)}
+.item.drag{opacity:.4}
+.item.over{box-shadow:0 -2px 0 var(--accent)}
+.item.over-after{box-shadow:0 2px 0 var(--accent)}
+.item{position:relative}
+.grip{position:absolute;left:-2px;top:50%;transform:translateY(-50%);opacity:0;color:var(--t3);cursor:grab;font-size:11px;letter-spacing:-2px;user-select:none}
+.item:hover .grip,.item:focus .grip{opacity:1}
+.dot{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--t3);flex:none;display:grid;place-items:center;font-size:10px;color:var(--on-btn);background:none;padding:0}
+.dot.chk{border-radius:4px;transform:rotate(45deg) scale(.82)}
+.dot.chk span{transform:rotate(-45deg)}
+.item.done .dot{background:var(--ok);border-color:var(--ok)}
+.item.done .nm{color:var(--t3);text-decoration:line-through}
+.nm{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mt{font-size:12px;color:var(--t3)}
+.tag{font-size:11px;line-height:18px;color:var(--accent-ink);background:var(--accent-soft);border-radius:6px;padding:0 6px;flex:none}
+.tag.late{color:var(--bad);background:var(--bad-soft)}
+.pin{opacity:0;border:0;background:none;color:var(--t3);padding:0 2px;line-height:0}
+.pin svg{width:14px;height:14px}
+.item:hover .pin,.item:focus-within .pin{opacity:1}
+.item.pinned .pin{opacity:1;color:var(--accent)}
+.item.pinned .pin svg{fill:currentColor}
+.empty{color:var(--t3);padding:6px 10px;font-size:13px}
+.sidefoot{margin-top:auto;padding:14px 6px 2px;display:flex;flex-direction:column;gap:4px}
+.linkbtn{border:0;background:none;color:var(--t2);padding:6px 4px;text-align:left;border-radius:8px}
+.linkbtn:hover{color:var(--text);background:var(--soft)}
+.tpill{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:3px 11px;font-size:12.5px;display:inline-flex;gap:6px;align-items:center;color:var(--text)}
+.tpill i{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block}
+.tpill.due i{background:var(--bad)}
+.tpill.paused i{background:var(--t3)}
+
+.mainwrap{position:relative;min-width:0;display:flex;flex-direction:column;min-height:0}
+.mtop{display:none}
+main{flex:1;overflow:auto;padding-block:0 56px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;align-items:center}
+#sbOpen{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:calc(14px + env(safe-area-inset-left,0px));z-index:6}
+body.c .app{grid-template-columns:minmax(0,1fr)}
+body.c aside{display:none}
+.scrim{display:none}
+
+/* ---------- shared ---------- */
+.page{width:100%;max-width:760px;margin-top:7vh;display:flex;flex-direction:column;gap:18px}
+.page.wide{max-width:1100px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ph h1{font-size:28px}
+.ph p{margin:4px 0 0;color:var(--t2)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 16px;color:var(--text);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{background:var(--soft)}
+.btn.pri{background:var(--text);color:var(--bg);border-color:var(--text)}
+.btn.pri:hover{opacity:.9}
+.btn.acc{background:var(--btn);color:var(--on-btn);border-color:var(--btn)}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:3px 11px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card h2{font-size:18px}
+.sub{color:var(--t2);font-size:13px}
+.note-s{color:var(--t3);font-size:12.5px}
+.seg{display:inline-flex;background:var(--soft);border-radius:10px;padding:2px;flex:none}
+.seg button{border:0;background:none;padding:4px 13px;border-radius:8px;color:var(--t2)}
+.seg button.on{background:var(--panel);color:var(--text);box-shadow:0 0 0 1px var(--line)}
+.chip{border:1px solid var(--line);border-radius:999px;padding:0 10px;font-size:12.5px;line-height:24px;color:var(--t2);background:var(--panel);display:inline-flex;align-items:center;gap:4px}
+button.chip:hover{background:var(--soft)}
+.chip.hit{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-soft)}
+.chip.warn{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
+.chip .x{margin-left:2px;cursor:pointer;opacity:.7;border:0;background:none;padding:0 2px;color:inherit;font:inherit}
+.chip .x:hover{opacity:1}
+.cd{width:9px;height:9px;border-radius:3px;display:inline-block;flex:none}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--t2);min-width:0}
+input.in,select.in,textarea.in{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 10px;width:100%;color:var(--text)}
+textarea.in{resize:vertical;min-height:64px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.banner{width:100%;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--warn-soft);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:9px 14px;font-size:13.5px}
+.banner b{color:var(--warn)}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));background:var(--text);color:var(--bg);padding:8px 16px;border-radius:10px;z-index:50;font-size:13.5px;max-width:min(560px,90vw);box-shadow:var(--pop-shadow)}
+dialog{border:1px solid var(--line);border-radius:18px;background:var(--bg);color:var(--text);padding:20px 22px;width:min(520px,94vw);max-height:88vh;overflow:auto;box-shadow:var(--pop-shadow)}
+dialog::backdrop{background:var(--scrim)}
+dialog h2{font-size:20px;margin-bottom:12px}
+.dlgfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--bad-soft);border-radius:10px;padding:8px 12px;font-size:13.5px}
+
+/* ---------- home ---------- */
+.hshell{width:100%;max-width:1200px;flex:1 0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:0 28px;justify-items:center;align-items:center;align-content:center;padding-block:5vh 3vh}
+.hshell>.home{justify-self:center}
+.tpanel{width:100%;max-width:760px;margin:28px 0 0;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.ptab{position:absolute;z-index:5;top:calc(14px + env(safe-area-inset-top,0px));right:max(18px,env(safe-area-inset-right,0px));border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 12px;display:inline-flex;gap:8px;align-items:center;color:var(--t2);font-size:13px}
+.ptab:hover{background:var(--soft)}
+.tph{display:flex;justify-content:space-between;align-items:flex-start}
+.tph b{font:500 17px var(--serif);display:block}
+.tph small{color:var(--t3);font-size:12.5px}
+.tph .ib{width:28px;height:28px;font-size:18px}
+.plive{display:flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--side);border-radius:10px;padding:6px 10px;color:var(--text);text-align:left;min-width:0}
+.plive .clk{font:500 14px var(--mono)}
+.pstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pstats div{display:flex;flex-direction:column}
+.pstats strong{font:500 21px/1.2 var(--serif)}
+.pstats small{color:var(--t3);font-size:12px}
+.pbar{height:5px;border-radius:3px;background:var(--soft);overflow:hidden;margin-top:-4px}
+.pbar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.psec{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:10px}
+.pl{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--t3);letter-spacing:.03em}
+.pl .linkbtn{font-size:12.5px;color:var(--accent-ink)}
+.psec .strip{height:26px;margin:2px 0 0}
+.psec .ticks{font-size:10px}
+.pweek{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;height:74px}
+.pweek div{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.pweek .pb{flex:1;width:100%;max-width:22px;background:var(--soft);border-radius:4px;display:flex;align-items:flex-end;overflow:hidden}
+.pweek .pb i{display:block;width:100%;background:var(--accent);border-radius:4px}
+.pweek .pb i.t{background:var(--accent-ink)}
+.pweek small{font-size:11px;color:var(--t3)}
+.pweek small.on{color:var(--accent-ink);font-weight:600}
+.pcourse{display:flex;gap:8px;align-items:baseline;border:0;background:none;padding:4px 6px;margin:0 -6px;border-radius:8px;text-align:left;color:var(--text);min-width:0}
+.pcourse:hover{background:var(--soft)}
+.pcourse small{color:var(--t3);flex:none;width:44px}
+@media (min-width:1240px){
+ .hshell{grid-template-columns:minmax(0,1fr) 300px;align-items:start}
+ .hshell.off{grid-template-columns:minmax(0,1fr)}
+ .tpanel{position:sticky;top:20px;margin-top:0;max-width:none;align-self:start}
+ .hshell>.home{max-width:720px}
+}
+.home{width:100%;max-width:760px;display:flex;flex-direction:column;gap:0}
+.home>.banner{margin:0 0 30px}
+.hello{display:flex;align-items:center;justify-content:center;gap:12px;font:400 34px/1.3 var(--serif);margin-bottom:24px;text-align:center}
+.logo{display:inline-grid;place-items:center;flex:none;width:46px;height:46px;border-radius:13px;background:var(--btn);color:var(--on-btn);font:600 30px/1 var(--serif);letter-spacing:0}
+.logo.sm{width:26px;height:26px;border-radius:7px;font-size:17px}
+.box{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:14px 14px 10px 20px;box-shadow:var(--shadow)}
+.box:focus-within{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.box textarea{width:100%;border:0;outline:0;resize:none;background:none;font-size:16px;min-height:48px;line-height:1.6;padding:2px 0}
+.box textarea::placeholder{color:var(--t3)}
+.parsed{display:flex;gap:6px;flex-wrap:wrap;min-height:4px;margin:2px 0 6px}
+.bar{display:flex;align-items:center;gap:8px}
+.sq{width:34px;height:34px;border:0;border-radius:9px;background:none;font-size:22px;line-height:1;color:var(--t2)}
+.sq:hover{background:var(--soft)}
+.send{width:34px;height:34px;border-radius:10px;border:0;background:var(--btn);color:var(--on-btn);display:grid;place-items:center;flex:none}
+.model{margin-left:auto;border:0;background:none;padding:5px 10px;border-radius:9px;color:var(--t2);font-size:13.5px;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.model:hover{background:var(--soft);color:var(--text)}
+.agentc{flex-direction:column;border-color:var(--accent)}
+.agl{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.agp{border:1px solid var(--line);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:6px}
+.agp legend{font-size:13px;color:var(--t2);padding:0 4px}
+.send:disabled{opacity:.35;cursor:default}
+.feed{margin-top:18px;display:flex;flex-direction:column;gap:8px}
+.act{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 14px;color:var(--t2);display:flex;gap:10px;align-items:baseline}
+.act span{flex:1;min-width:0}
+.act b{color:var(--ok);font-weight:500}
+.pop{position:fixed;z-index:40;min-width:270px;max-width:min(340px,92vw);max-height:min(70vh,560px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:var(--pop-shadow)}
+.pop button.r{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:7px 10px;border-radius:8px;text-align:left;color:var(--text);line-height:1.35}
+.pop button.r:hover{background:var(--soft)}
+.pop button.r small{display:block;color:var(--t3);font-size:12px}
+.pop button.r svg{color:var(--t2)}
+.pop .ch{margin-left:auto;color:var(--t3)}
+.pop .ck{margin-left:auto;color:var(--accent-ink)}
+.pop hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
+.gh{font-size:12px;color:var(--t3);padding:8px 10px 2px;letter-spacing:.04em}
+.opts{display:flex;gap:6px;flex-wrap:wrap;padding:4px 10px 8px}
+.opts button{padding:3px 11px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--text);font-size:13px}
+.opts button.on{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-soft)}
+.opts input{padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel);width:auto;font-size:13px}
+
+/* ---------- timer ---------- */
+.tgrid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+.dial{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 18px}
+.dial .what{font:500 19px/1.4 var(--serif);text-align:center;min-height:27px;max-width:100%;overflow-wrap:anywhere}
+.ring{position:relative;width:min(270px,70vw);aspect-ratio:1;max-width:100%}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .trk{fill:none;stroke:var(--soft);stroke-width:9}
+.ring .arc{fill:none;stroke:var(--accent);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .5s linear}
+.ring.due .arc{stroke:var(--bad)}
+.ring.paused .arc{stroke:var(--t3)}
+.ring .face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.clock{font:400 54px/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.cap{font-size:13px;color:var(--t2);text-align:center;padding:0 24px}
+.ctrls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.side h2{margin-bottom:10px}
+.form{display:flex;flex-direction:column;gap:12px}
+.tchips{display:flex;gap:6px;flex-wrap:wrap}
+.tchips .chip{cursor:pointer}
+.durs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.durs button{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:5px 12px;color:var(--text)}
+.durs button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+.durs input{width:84px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px}
+.kv dt{color:var(--t3)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:var(--text)}
+.check input{margin-top:4px}
+.strip{position:relative;height:34px;border-radius:8px;background:var(--soft);overflow:hidden;margin:6px 0 2px}
+.strip .blk{position:absolute;top:5px;bottom:5px;border-radius:4px;min-width:3px;opacity:.9}
+.strip .now{position:absolute;top:0;bottom:0;width:2px;background:var(--text);opacity:.55}
+.ticks{position:relative;height:16px;font-size:11px;color:var(--t3)}
+.ticks span{position:absolute;transform:translateX(-50%)}
+.ticks span:first-child{transform:none}
+.ticks span:last-child{transform:translateX(-100%)}
+.slist{display:flex;flex-direction:column}
+.sr{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:4px 12px;padding:9px 2px;border-top:1px solid var(--line);align-items:baseline}
+.sr:first-child{border-top:0}
+.sr .tm{font:13px var(--mono);color:var(--t2);font-variant-numeric:tabular-nums}
+.sr .tt{display:flex;gap:8px;align-items:baseline;min-width:0}
+.sr .tt span{overflow-wrap:anywhere}
+.sr .mn{font-variant-numeric:tabular-nums;color:var(--t2);font-size:13.5px;display:flex;gap:6px;align-items:center}
+.sr .nt{grid-column:2/4;color:var(--t2);font-size:13px;margin-top:-2px;overflow-wrap:anywhere}
+.sr.note .tt span{color:var(--t2)}
+.sr .eb{border:0;background:none;color:var(--t3);padding:0 4px;font-size:13px}
+.sr .eb:hover{color:var(--text)}
+
+/* ---------- review ---------- */
+.stats{display:flex;gap:10px 26px;flex-wrap:wrap;align-items:baseline}
+.stats div{display:flex;flex-direction:column}
+.stats strong{font:500 26px/1.15 var(--serif);font-variant-numeric:tabular-nums}
+.stats small{color:var(--t3);font-size:12.5px}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--t3);font-size:11px;font-family:var(--sans)}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart .bar{fill:var(--accent)}
+.chart .bar.z{fill:var(--soft)}
+.chart .bar.t{fill:var(--accent-ink)}
+.hbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;font-size:13.5px;margin-top:8px}
+.hbar .tr{grid-column:1/3;height:7px;border-radius:4px;background:var(--soft);overflow:hidden;margin-bottom:6px}
+.hbar .tr i{display:block;height:100%;border-radius:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.heat{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:8px}
+.heat .hd{font-size:11px;color:var(--t3);text-align:center}
+.heat button{aspect-ratio:1.6;border-radius:6px;border:0;background:var(--soft);font-size:11px;color:var(--t2);padding:0;max-width:100%}
+.heat button.l1{background:color-mix(in srgb,var(--accent) 22%,var(--soft))}
+.heat button.l2{background:color-mix(in srgb,var(--accent) 48%,var(--soft))}
+.heat button.l3{background:color-mix(in srgb,var(--accent) 75%,var(--soft));color:var(--on-btn)}
+.heat button.l4{background:var(--btn);color:var(--on-btn)}
+.heat button.nil{visibility:hidden}
+.day{border-top:1px solid var(--line);padding-top:4px}
+.day summary{cursor:pointer;padding:8px 0;display:flex;gap:10px;align-items:baseline;list-style:none}
+.day summary::-webkit-details-marker{display:none}
+.day summary b{font-weight:600}
+.day summary::before{content:"›";color:var(--t3);display:inline-block;transition:transform .15s}
+.day[open] summary::before{transform:rotate(90deg)}
+
+/* ---------- week ---------- */
+.wk{display:grid;grid-template-columns:repeat(7,minmax(128px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+.wcol{border-radius:12px;padding:7px;display:flex;flex-direction:column;gap:6px;min-height:280px;background:var(--side);border:1px solid var(--line);min-width:0}
+.wcol.over{background:var(--accent-soft)}
+.wcol.td{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+.wh{display:flex;justify-content:space-between;align-items:baseline;padding:2px 4px}
+.wh b{font-weight:600}
+.wcol.td .wh b{color:var(--accent-ink)}
+.wh small{color:var(--t3)}
+.ld{height:4px;border-radius:2px;background:var(--soft);margin:0 4px}
+.ld i{display:block;height:100%;border-radius:2px;background:var(--ok)}
+.ld i.ov{background:var(--bad)}
+.wmeta{display:flex;justify-content:space-between;gap:4px;padding:0 4px;font-size:11.5px;color:var(--t3);flex-wrap:wrap}
+.wc{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--c-other);border-radius:9px;padding:6px 9px;cursor:pointer;display:flex;flex-direction:column;font-size:13.5px;line-height:1.4;text-align:left;color:var(--text);width:100%}
+.wc small{color:var(--t3)}
+.wc.done{opacity:.55}
+.wc.done span{text-decoration:line-through}
+.wc.drag{opacity:.35}
+.wadd{border:1px dashed var(--line);background:none;border-radius:9px;color:var(--t3);padding:4px;font-size:13px}
+.wadd:hover{color:var(--text);border-color:var(--t3)}
+.wcol input{font-size:13px;padding:5px 8px}
+
+/* ---------- tree ---------- */
+.trees{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tlay{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+.ted .grid2{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.tedrow{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:end}
+@media (max-width:760px){.tedrow{grid-template-columns:minmax(0,1fr)}}
+.tw{position:relative;overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--side);min-height:240px;max-height:70vh}
+.tcan{position:relative}
+.tcan svg{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.tn{position:absolute;width:176px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 11px;font-size:13px;line-height:1.4;text-align:left;color:var(--text);display:flex;flex-direction:column;gap:2px}
+.tn b{font-weight:500;overflow-wrap:anywhere}
+.tn small{color:var(--t3)}
+.tn.goal{background:var(--text);color:var(--bg);border-color:var(--text)}
+.tn.goal small{color:inherit;opacity:.7}
+.tn.check{border-style:dashed;border-color:var(--accent)}
+.tn.sel{box-shadow:0 0 0 2px var(--accent)}
+.tn.dim{opacity:.5}
+.tn .cond{align-self:flex-start;font-size:11.5px;color:var(--accent-ink);background:var(--accent-soft);border-radius:999px;padding:0 8px}
+.tn .st{font-size:11.5px;color:var(--ok)}
+.ted{display:flex;flex-direction:column;gap:10px}
+.tbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* ---------- schedule ---------- */
+.tsc{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+table.tt{border-collapse:collapse;width:100%;min-width:760px;table-layout:fixed}
+table.tt th,table.tt td{border-bottom:1px solid var(--line);border-left:1px solid var(--line);padding:6px;vertical-align:top}
+table.tt th:first-child,table.tt td:first-child{border-left:0;width:54px;text-align:center;color:var(--t3);font-weight:400;font-size:12.5px}
+table.tt thead th{font-weight:500;font-size:13px;background:var(--side)}
+table.tt thead th small{display:block;color:var(--t3);font-weight:400}
+table.tt .tdc{background:color-mix(in srgb,var(--accent-soft) 55%,transparent)}
+.cell{display:block;width:100%;border:1px solid var(--line);border-left:3px solid var(--c-school);background:var(--panel);border-radius:8px;padding:5px 7px;text-align:left;font-size:12.5px;line-height:1.35;color:var(--text);margin-bottom:4px}
+.cell:hover{background:var(--soft)}
+.cell small{display:block;color:var(--t3)}
+.cell.lab{border-left-color:var(--c-math)}
+.ann{display:inline-block;font-size:10.5px;line-height:16px;border-radius:5px;padding:0 5px;margin-top:3px;background:var(--warn-soft);color:var(--warn)}
+
+/* ---------- data dialog ---------- */
+.dsec{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.dsec:first-of-type{border-top:0;padding-top:0}
+.dsec h3{font-size:15px}
+.dsec p{margin:0}
+textarea.json{font:12px/1.5 var(--mono);min-height:120px}
+
+@media (max-width:860px){
+ .tgrid,.two,.tlay{grid-template-columns:minmax(0,1fr)}
+ .tgrid.ready .side{order:-1}
+}
+.ted label.f>input,.ted label.f>select{max-width:460px}
+@media (max-width:760px){
+ .app{grid-template-columns:minmax(0,1fr)}
+ aside{position:fixed;inset:0 auto 0 0;width:min(300px,86vw);z-index:30;transform:translateX(-105%);transition:transform .2s;padding-top:calc(12px + env(safe-area-inset-top,0px));padding-left:max(10px,env(safe-area-inset-left,0px))}
+ body.nav-open aside{transform:none}
+ body.nav-open .scrim{display:block;position:fixed;inset:0;background:var(--scrim);z-index:25}
+ body.c aside{display:flex}
+ #sbOpen,#sbClose{display:none!important}
+ .mtop{display:flex;align-items:center;gap:8px;padding-block:8px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line);background:var(--bg)}
+ main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+ .hshell{padding-block:3vh 2vh}
+ .ptab{top:calc(62px + env(safe-area-inset-top,0px))}
+ .hello{font-size:27px}
+ .page{margin-top:22px}
+ .wk{grid-template-columns:minmax(0,1fr)}
+ .wcol{min-height:0}
+ .clock{font-size:44px}
+ .sr{grid-template-columns:76px minmax(0,1fr) auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<button class="ib" id="sbOpen" hidden aria-label="显示侧边栏" title="显示侧边栏 (Ctrl+B)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button>
+<div class="app">
+<aside id="side" aria-label="导航与任务">
+ <div class="brandrow"><span class="logo sm" aria-hidden="true">T</span><span class="brand" aria-label="T计划">计划<small>给每一步留一点空间</small></span><button class="ib" id="sbClose" aria-label="收起侧边栏" title="收起为图标栏 (Ctrl+B)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button></div>
+ <button class="side-create" data-sb="create" aria-label="新建任务" title="新建任务"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>新建任务</span></button>
+ <div class="side-scroll">
+  <section id="sideFocus" class="side-focus" aria-label="当前计时" hidden></section>
+  <nav id="nav" aria-label="功能导航"></nav>
+  <section class="side-tasks" aria-label="我的任务"><div class="side-section-title">我的任务</div><div id="groups"></div></section>
+ </div>
+ <div class="sidefoot"><button class="side-settings" data-act="data" aria-label="数据与设置" title="数据与设置"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>数据与设置</span></button><div class="side-storage"><i aria-hidden="true"></i><small id="saveState">记录保存在这台设备的浏览器里</small></div></div>
+</aside>
+<div class="scrim" id="scrim"></div>
+<div class="mainwrap">
+ <header class="mtop"><button class="ib" id="menuBtn" aria-label="打开导航"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span class="logo sm" aria-hidden="true">T</span><span class="brand" aria-label="T计划">计划</span><span class="grow"></span><button class="tpill" id="topPill" data-go="timer" hidden></button></header>
+ <main id="main"></main>
+</div>
+</div>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<dialog id="dlg" aria-label="详情"><div id="dlgc"></div></dialog>
+<input type="file" id="fileIn" accept=".json,application/json" hidden>
+
+<script>
+(()=>{
+'use strict';
+/* ================= 基础 ================= */
+const KEY='tplan.v3';
+const SCHED={"profile":{"name":"范子特","className":"测控241","group":1},"weeks":{"1":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"现代分析仪器及应用","二东201","付娆","normal","","","instruments-tue"],[2,3,"计算机网络技术","二东302","陈丹丹","normal","","","network-tue"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,4,"计算机网络技术","二东302","陈丹丹","normal","","","network-thu"],[5,2,"习近平新时代中国特色社会主义思想概论","四教B212","曲宏歌","normal","","","thought-fri"],[5,3,"现代分析仪器及应用","二东202","付娆","normal","","","instruments-fri"],[6,1,"党史","东阶3合","刘中华","normal","","","history-sat"],[7,3,"党史","东阶3合","刘中华","normal","","","history-sun"]],"2":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"现代分析仪器及应用","二东201","付娆","normal","","","instruments-tue"],[2,3,"计算机网络技术","二东302","陈丹丹","normal","","","network-tue"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,4,"计算机网络技术","二东302","陈丹丹","normal","","","network-thu"],[5,3,"现代分析仪器及应用","二东202","付娆","normal","","","instruments-fri"],[6,1,"党史","东阶3合","刘中华","normal","","","history-sat"],[7,3,"党史","东阶3合","刘中华","normal","","","history-sun"]],"3":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[1,4,"测控软件技术","一教239","刘玉秋","normal","","","software-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"现代分析仪器及应用","二东201","付娆","normal","","","instruments-tue"],[2,3,"计算机网络技术","二东302","陈丹丹","normal","","","network-tue"],[2,4,"电力经济与管理","二东203","刘寅东","normal","","","economy-tue"],[3,5,"测控软件技术","一教239","刘玉秋","normal","","","software-wed"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,2,"电力经济与管理","二东302","刘寅东","normal","","","economy-thu"],[4,4,"计算机网络技术","二东302","陈丹丹","normal","","","network-thu"],[5,2,"习近平新时代中国特色社会主义思想概论","四教B212","曲宏歌","normal","","","thought-fri"],[5,3,"现代分析仪器及应用","二东202","付娆","normal","","","instruments-fri"],[6,1,"党史","东阶3合","刘中华","normal","","","history-sat"],[7,3,"党史","东阶3合","刘中华","normal","","","history-sun"]],"4":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[1,4,"测控软件技术","一教239","刘玉秋","normal","","","software-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"现代分析仪器及应用","二东201","付娆","normal","","","instruments-tue"],[2,3,"计算机网络技术","二东302","陈丹丹","normal","","","network-tue"],[2,4,"电力经济与管理","二东203","刘寅东","normal","","","economy-tue"],[3,2,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-wed"],[3,5,"测控软件技术","一教239","刘玉秋","normal","","","software-wed"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,2,"电力经济与管理","二东302","刘寅东","normal","","","economy-thu"],[4,4,"计算机网络技术","二东302","陈丹丹","normal","","","network-thu"],[5,3,"现代分析仪器及应用","二东202","付娆","normal","","","instruments-fri"],[5,4,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-fri"],[6,1,"党史","东阶3合","刘中华","normal","","","history-sat"],[7,3,"党史","东阶3合","刘中华","normal","","","history-sun"]],"5":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[1,4,"测控软件技术","一教239","刘玉秋","normal","","","software-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"现代分析仪器及应用","二东201","付娆","normal","","","instruments-tue"],[2,3,"计算机网络技术","二东302","陈丹丹","normal","","","network-tue"],[2,4,"电力经济与管理","二东203","刘寅东","normal","","","economy-tue"],[3,2,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[3,5,"测控软件技术","一教239","刘玉秋","normal","","","software-wed"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,2,"电力经济与管理","二东302","刘寅东","normal","","","economy-thu"],[4,4,"计算机网络技术","二东302","陈丹丹","normal","","","network-thu"],[5,2,"习近平新时代中国特色社会主义思想概论","四教B212","曲宏歌","normal","","","thought-fri"],[5,3,"现代分析仪器及应用","二东202","付娆","normal","","","instruments-fri"],[5,4,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-fri"],[5,5,"形势与政策教育","东阶10合","魏子青","normal","","","policy-fri"],[6,1,"党史","东阶3合","刘中华","normal","","","history-sat"],[7,3,"党史","东阶3合","刘中华","normal","","","history-sun"]],"6":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[1,4,"测控软件技术","一教239","刘玉秋","normal","","","software-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"现代分析仪器及应用","二东201","付娆","normal","","","instruments-tue"],[2,3,"计算机网络技术","二东302","陈丹丹","normal","","","network-tue"],[2,4,"电力经济与管理","二东203","刘寅东","normal","","","economy-tue"],[3,2,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-wed"],[3,3,"🧪 分组实验①｜课程名待确认","待确认","待确认","normal","","本人参加第一组的本次实验；如与理论课重叠，本次上实验课，理论课不上。课程正式名称、教师和地点待确认。","group-lab-1"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[3,5,"测控软件技术","一教239","刘玉秋","normal","","","software-wed"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,2,"电力经济与管理","二东302","刘寅东","normal","","","economy-thu"],[4,4,"计算机网络技术","二东302","陈丹丹","normal","","","network-thu"],[5,3,"现代分析仪器及应用","二东202","付娆","normal","","","instruments-fri"],[5,4,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-fri"],[5,5,"形势与政策教育","东阶10合","魏子青","normal","","","policy-fri"]],"7":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[1,4,"测控软件技术","一教239","刘玉秋","normal","","","software-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"🧪 分组实验②｜课程名待确认","待确认","待确认","normal","","本人参加第一组的本次实验；如与理论课重叠，本次上实验课，理论课不上。课程正式名称、教师和地点待确认。","group-lab-2"],[2,2,"现代分析仪器及应用","二东201","付娆","occupied","【被实验占用】","本时段上实验课，理论课不上；原理论课保留供查看学习记录。","instruments-tue"],[3,2,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[3,5,"测控软件技术","一教239","刘玉秋","normal","","","software-wed"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,2,"🧪 分组实验③｜课程名待确认","待确认","待确认","normal","","本人参加第一组的本次实验；如与理论课重叠，本次上实验课，理论课不上。课程正式名称、教师和地点待确认。","group-lab-3"],[5,2,"习近平新时代中国特色社会主义思想概论","四教B212","曲宏歌","normal","","","thought-fri"],[5,3,"现代分析仪器及应用","二东202","付娆","normal","","","instruments-fri"],[5,4,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-fri"],[5,5,"形势与政策教育","东阶10合","魏子青","normal","","","policy-fri"]],"8":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[1,4,"测控软件技术","一教239","刘玉秋","normal","","","software-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"🧪 单片机实验","地点待确认","待确认","normal","","","micro-lab-tue"],[2,4,"🧪 分组实验④｜课程名待确认","待确认","待确认","normal","","本人参加第一组的本次实验；如与理论课重叠，本次上实验课，理论课不上。课程正式名称、教师和地点待确认。","group-lab-4"],[3,2,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-wed"],[3,3,"🧪 单片机实验","地点待确认","待确认","normal","","","micro-lab-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[3,5,"测控软件技术","一教239","刘玉秋","normal","","","software-wed"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,2,"🧪 单片机实验","地点待确认","待确认","normal","","","micro-lab-thu"],[5,2,"🧪 单片机实验","地点待确认","待确认","normal","","","micro-lab-fri-w8"],[5,3,"现代分析仪器及应用","二东202","付娆","normal","","","instruments-fri"],[5,4,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-fri"],[5,5,"形势与政策教育","东阶10合","魏子青","normal","","","policy-fri"]],"9":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[1,4,"测控软件技术","一教239","刘玉秋","normal","","","software-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"🧪 单片机实验","地点待确认","待确认","normal","","","micro-lab-tue"],[2,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-tue"],[3,2,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-wed"],[3,3,"🧪 单片机实验","地点待确认","待确认","normal","","","micro-lab-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[3,5,"测控软件技术","一教239","刘玉秋","normal","","","software-wed"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,2,"🧪 单片机实验","地点待确认","待确认","normal","","","micro-lab-thu"],[4,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-thu"],[5,2,"习近平新时代中国特色社会主义思想概论","四教B212","曲宏歌","normal","","","thought-fri"],[5,3,"🧪 单片机实验","地点待确认","待确认","normal","","","micro-lab-fri-w9"],[5,4,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-fri"]],"10":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[1,4,"测控软件技术","一教239","刘玉秋","normal","","","software-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"🧪 单片机实验","地点待确认","待确认","normal","","","micro-lab-tue"],[2,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-tue"],[3,2,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[3,5,"测控软件技术","一教239","刘玉秋","normal","","","software-wed"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-thu"],[5,4,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-fri"]],"11":[[1,1,"微型计算机原理及接口技术","二东402","门洪","normal","","","micro-mon"],[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[2,1,"微型计算机原理及接口技术","二东201","门洪","normal","","","micro-tue"],[2,2,"🔴 单片机实验考核","地点待确认","待确认","normal","","考核可以带教材、实验指导书；实验指导书上可以记笔记。","micro-lab-assessment"],[2,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-tue"],[3,2,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-wed"],[3,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[4,1,"微型计算机原理及接口技术","二东202","门洪","normal","","","micro-thu"],[4,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-thu"],[5,2,"习近平新时代中国特色社会主义思想概论","四教B212","曲宏歌","normal","","","thought-fri"],[5,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-fri"],[5,4,"误差理论与数据分析","二东301","杨汉瑞","normal","","","errors-fri"]],"12":[[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[2,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-tue"],[3,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[4,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-thu"],[5,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-fri"]],"13":[[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[2,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-tue"],[3,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[4,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-thu"],[5,2,"习近平新时代中国特色社会主义思想概论","四教B212","曲宏歌","normal","","","thought-fri"],[5,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-fri"]],"14":[[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[2,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-tue"],[3,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[4,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-thu"],[5,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-fri"]],"15":[[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[2,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-tue"],[3,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[4,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-thu"],[5,2,"习近平新时代中国特色社会主义思想概论","四教B212","曲宏歌","normal","","","thought-fri"],[5,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-fri"]],"16":[[1,2,"传感器原理及应用","二中520","耿靖童","normal","","","sensors-mon"],[1,3,"习近平新时代中国特色社会主义思想概论","二东602","曲宏歌","normal","","","thought-mon"],[2,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-tue"],[3,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-wed"],[3,4,"传感器原理及应用","二中221","耿靖童","normal","","","sensors-wed"],[4,3,"热力设备及辅机","二东202","姚国家","normal","","","thermal-thu"],[5,3,"🧪 电子电路CAD实验","主教239","张叶","normal","","","cad-lab-fri"]],"17":[],"18":[],"19":[],"20":[]},"pending":["第一组四次实验的课程正式名称、教师和地点尚未提供；已确认的四次个人实验时间照常显示。"],"ann":{"2026-09-10":["partial-leave","数学建模 · 18:00后请假","18:00后参加数学建模，地点三教；老师安排请假（用户提供）。白天课程保留；晚间对应节次起止时间待核实。"],"2026-09-11":["leave","数学建模 · 全天请假","全天参加数学建模，地点三教；老师安排请假（用户提供）。"],"2026-09-12":["leave","数学建模 · 全天请假","全天参加数学建模，地点三教；老师安排请假（用户提供）。"],"2026-09-13":["leave","数学建模 · 全天请假","全天参加数学建模，地点三教；老师安排请假（用户提供）。"],"2026-09-20":["workday","全国调休上班日","全国调休上班日；不代表学校已确认补课，不映射其他星期课程，学校安排待核实。"],"2026-09-25":["holiday","中秋节","全国放假安排：9月25–27日；学校停课、补课安排待核实，基础课表保留。"],"2026-09-26":["holiday","中秋节","全国放假安排：9月25–27日；学校停课、补课安排待核实，基础课表保留。"],"2026-09-27":["holiday","中秋节","全国放假安排：9月25–27日；学校停课、补课安排待核实，基础课表保留。"],"2026-10-01":["holiday","国庆节","全国放假调休安排：10月1–7日；学校停课、补课安排待核实，基础课表保留。"],"2026-10-02":["holiday","国庆节","全国放假调休安排：10月1–7日；学校停课、补课安排待核实，基础课表保留。"],"2026-10-03":["holiday","国庆节","全国放假调休安排：10月1–7日；学校停课、补课安排待核实，基础课表保留。"],"2026-10-04":["holiday","国庆节","全国放假调休安排：10月1–7日；学校停课、补课安排待核实，基础课表保留。"],"2026-10-05":["holiday","国庆节","全国放假调休安排：10月1–7日；学校停课、补课安排待核实，基础课表保留。"],"2026-10-06":["holiday","国庆节","全国放假调休安排：10月1–7日；学校停课、补课安排待核实，基础课表保留。"],"2026-10-07":["holiday","国庆节","全国放假调休安排：10月1–7日；学校停课、补课安排待核实，基础课表保留。"],"2026-10-10":["workday","全国调休上班日","全国调休上班日；不代表学校已确认补课，不映射其他星期课程，学校安排待核实。"],"2027-01-01":["holiday","元旦（法定日期）","仅确认1月1日为元旦法定日期；2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-02":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-03":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-04":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-05":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-06":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-07":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-08":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-09":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-10":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-11":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-12":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-13":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-14":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-15":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-16":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-17":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-18":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-19":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-20":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-21":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-22":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-23":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"],"2027-01-24":["unknown","放假调休待核实","2027年完整放假调休安排尚未核实，不能据此判断学校停课或补课；基础课表保留。"]}};
+const SEM='2026-09-07';
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ymd(new Date());
+const dt=s=>new Date(s+'T12:00:00');
+const addDays=(s,n)=>{const d=dt(s);d.setDate(d.getDate()+n);return ymd(d);};
+const dow=s=>(dt(s).getDay()+6)%7; // 0=周一
+const WD=['一','二','三','四','五','六','日'];
+const weekStart=s=>addDays(s,-dow(s));
+const tWeek=s=>Math.floor((dt(s)-dt(SEM))/(7*864e5))+1;
+const md=s=>s?Number(s.slice(5,7))+'/'+Number(s.slice(8,10)):'未定';
+const dayLabel=s=>{if(!s)return '日期未定';const t=today();const r=s===t?'今天':s===addDays(t,1)?'明天':s===addDays(t,2)?'后天':s===addDays(t,-1)?'昨天':'';return (r?r+' ':'')+md(s)+' 周'+WD[dow(s)];};
+const hm=ms=>{const d=new Date(ms);return pad(d.getHours())+':'+pad(d.getMinutes());};
+const dateOfMs=ms=>ymd(new Date(ms));
+const uid=p=>p+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const fmtMin=m=>{m=Math.round(m||0);if(m<60)return m+' 分钟';const h=Math.floor(m/60),r=m%60;return h+' 小时'+(r?' '+r+' 分':'');};
+const fmtShort=m=>{m=Math.round(m||0);if(m<60)return m+'′';return (m/60).toFixed(m%60?1:0)+'h';};
+const clock=ms=>{const s=Math.max(0,Math.round(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?h+':'+pad(m)+':'+pad(x):pad(m)+':'+pad(x);};
+const I={
+ plus:'<path d="M12 5v14M5 12h14"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',back:'<path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/>',
+ week:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18M9 16l2 2 4-4"/>',tree:'<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 4-6 3-12 6"/>',
+ book:'<path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2Z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7Z"/>',pin:'<path d="M12 17v5M9 3h6l-1 6 3 3v2H7v-2l3-3Z"/>',
+ link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>',
+ tag:'<path d="M3 12V4h8l10 10-8 8Z"/><circle cx="7.5" cy="8.5" r="1"/>',star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9Z"/>',
+ tpl:'<path d="M6 3h8l4 4v14H6Z"/><path d="M9 12h6M9 16h6"/>',pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',play:'<path d="M7 5v14l11-7Z"/>',send:'<path d="M12 19V5M5 12l7-7 7 7"/>'
+};
+const svg=(k,c='i')=>`<svg class="${c}" viewBox="0 0 24 24" aria-hidden="true">${I[k]}</svg>`;
+
+const CAT={school:'学校专业课',math:'考研数学',english:'六级/英语',other:'其他',power:'电力系统分析',agent:'AI / Agent',fitness:'健身',stocks:'财务/投资'};
+const CHOICES=['school','math','english','other'];
+const catColor=c=>({school:'var(--c-school)',math:'var(--c-math)',english:'var(--c-english)',other:'var(--c-other)'})[c]||'var(--c-legacy)';
+const catLabel=c=>CAT[c]||'历史分类';
+const KW=[['school',/学校专业课|专业课|模电|数电|电路|实验|传感器|微机|单片机|测控|误差理论|报告/],['math',/考研数学|数学(?!建模)|高数|线代|线性代数|概率|极限|导数|积分|微分/],['english',/六级|四级|英语|单词|听力|口语|阅读理解|作文/]];
+const catOf=s=>(KW.find(k=>k[1].test(s))||['other'])[0];
+
+/* ================= 课表数据 ================= */
+const COURSE_NAME={};for(const w in SCHED.weeks)for(const c of SCHED.weeks[w])COURSE_NAME[c[8]]=c[2].replace(/^🧪\s*/,'');
+const coursesOn=d=>{const w=tWeek(d);if(w<1||w>20)return[];return (SCHED.weeks[w]||[]).filter(c=>c[0]===dow(d)+1).sort((a,b)=>a[1]-b[1]);};
+const slotText=s=>(s*2-1)+'–'+(s*2)+'节';
+const cName=c=>c[2].replace(/^🧪\s*/,'');
+
+/* ================= 状态 ================= */
+const empty=()=>({app:'tplan',v:1,sample:false,tasks:[],main:{},sessions:[],notes:[],trees:[],active:null,archive:null,settings:{cap:180},planningVersion:1,proposals:[],reviewEntries:{},weekPlans:{},ui:{}});
+let S,storageOK=true;
+function normalize(o){const e=empty();o=o&&typeof o==='object'?o:{};for(const k of Object.keys(e))if(o[k]===undefined)o[k]=e[k];
+ for(const k of ['tasks','sessions','notes','trees'])if(!Array.isArray(o[k]))o[k]=[];
+ if(!o.settings||typeof o.settings!=='object')o.settings={cap:180};if(!o.settings.cap)o.settings.cap=180;
+ if(!o.main||typeof o.main!=='object')o.main={};o.ui={};return TPlanPlanning.normalize(o);}
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){S=normalize(JSON.parse(raw));return;}}catch(e){storageOK=false;}S=sampleState();}
+function save(){try{PC.normalize(S);const ui=S.ui;S.ui=undefined;localStorage.setItem(KEY,JSON.stringify(S));S.ui=ui;storageOK=true;}catch(e){storageOK=false;}const el=$('#saveState');if(el)el.textContent=storageOK?'记录保存在这台设备的浏览器里':'⚠ 浏览器存储不可用，关闭页面后记录会丢失，请导出备份';}
+const task=id=>S.tasks.find(t=>t.id===id);
+const taskMin=id=>S.sessions.filter(s=>s.taskId===id).reduce((a,s)=>a+s.minutes,0);
+const dayMin=d=>S.sessions.filter(s=>s.date===d).reduce((a,s)=>a+s.minutes,0);
+function newTask(o){return {id:uid('t'),title:o.title,cat:o.cat||catOf(o.title),date:o.date===null?null:o.date||today(),week:o.date===null?(o.week||weekStart(today())):null,est:o.est||30,done:false,doneAt:null,pin:!!o.pin,createdAt:Date.now(),tree:o.tree||null,check:!!o.check,legacy:null,next:'',origin:'user'};}
+function setDone(t,v){t.done=v;t.doneAt=v?Date.now():null;save();if(v&&t.check&&t.tree)setTimeout(()=>branchDialog(t),60);}
+
+/* ================= 示例数据 ================= */
+function sampleState(){
+ const s=empty();s.sample=true;const t=today();const at=(d,h,m)=>{const x=dt(d);x.setHours(h,m,0,0);return x.getTime();};
+ const T=(title,cat,off,est,ex={})=>{const k=newTask({title,cat,date:addDays(t,off),est});Object.assign(k,ex);s.tasks.push(k);return k;};
+ const a=T('实验报告的抄写','school',0,30,{pin:true});const b=T('复习模电：共射放大电路','school',0,45);const c=T('考研数学 极限 20 题','math',0,60);
+ T('六级听力一套','english',1,30);T('传感器第三章复盘','school',3,50);T('考研数学 导数应用','math',4,60);
+ b.done=true;b.doneAt=at(t,8,52);s.main[t]=b.id;
+ const S1=(title,taskId,cat,d,h,m,min,note='')=>s.sessions.push({id:uid('s'),title,taskId,cat,course:null,date:d,start:h==null?null:at(d,h,m),end:h==null?null:at(d,h,m)+min*60000,minutes:min,note,src:'timer'});
+ S1('复习模电：共射放大电路',b.id,'school',t,8,10,42,'画出直流通路，算了静态工作点');
+ S1('考研数学 极限 20 题',c.id,'math',t,10,5,45,'做到第 12 题，夹逼还不熟');
+ S1('实验报告的抄写',a.id,'school',t,14,20,18,'');
+ const P=[['背单词','english',25],['高数 极限例题','math',50],['微机原理作业','school',40],['六级阅读一篇','english',30],['传感器课件回看','school',35],['考研数学 错题重做','math',45]];
+ for(let i=1;i<=20;i++){const d=addDays(t,-i);const n=(i*7)%4;for(let j=0;j<n;j++){const p=P[(i+j*3)%P.length];S1(p[0],null,p[1],d,8+j*3+(i%2),(i*13)%50,p[2]+((i+j)%3)*5);}}
+ s.notes.push({id:uid('n'),date:t,text:'直流通路画出来了，β 的影响还没想清。',taskId:b.id,course:null,cat:'school',at:at(t,8,55),src:'app'});
+ s.notes.push({id:uid('n'),date:addDays(t,-1),text:'高数例题第 3 题换元想了很久，下次先列出常见等价无穷小。',taskId:null,course:null,cat:'math',at:at(addDays(t,-1),21,10),src:'app'});
+ s.trees.push(templateTree('math','考研数学：极限专题'));
+ return s;}
+
+/* ================= 渲染框架 ================= */
+const VIEWS=['today','timer','review','week','tree','schedule'];
+const NAV=[['today','今天','plus'],['timer','计时','clock'],['review','回看','back'],['week','本周','week'],['tree','决策树','tree'],['schedule','课表','book']];
+let view='today';
+function go(v){if(!VIEWS.includes(v))v='today';view=v;try{history.replaceState(null,'','#'+v);}catch(e){}document.body.classList.remove('nav-open');closePop();render();$('#main').scrollTop=0;}
+function render(){renderNav();renderSide();const m=$('#main');m.innerHTML=({today:vToday,timer:vTimer,review:vReview,week:vWeek,tree:vTree,schedule:vSchedule,assistant:vAssistant}[view])();after();tick();}
+function after(){if(view==='today')initComposer();if(view==='tree')drawTree();}
+function renderNav(){$('#nav').innerHTML=NAV.map(([k,l,ic])=>`<button class="nav ${view===k?'on':''}" data-go="${k}" ${view===k?'aria-current="page"':''}>${svg(ic)}${l}${k==='timer'&&S.active?'<span class="k" id="navClock"></span>':''}</button>`).join('');}
+function toast(msg){const e=$('#toast');e.textContent=msg;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,3600);}
+function banner(){return S.sample?`<div class="banner"><b>示例数据</b><span>这些任务和时间记录只是演示，用来看看各页面的样子。</span><span class="grow"></span><button class="btn sm" data-act="clear-sample">清空示例，开始使用</button><button class="btn sm" data-act="data">导入旧版数据</button></div>`:'';}
+
+/* ================= 侧栏 ================= */
+function renderSide(){
+ const t=today(),main=S.main[t];
+ const pinned=S.tasks.filter(x=>x.pin&&!(x.done&&x.date<t));
+ const td=S.tasks.filter(x=>!x.pin&&(x.date===t||(x.date<t&&!x.done)));
+ const later=S.tasks.filter(x=>!x.pin&&(x.date>t||x.date===null&&!x.done));
+ td.sort((a,b)=>(b.id===main)-(a.id===main)||a.done-b.done);
+ later.sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')||S.tasks.indexOf(a)-S.tasks.indexOf(b));
+ const it=x=>`<div class="item ${x.done?'done':''} ${x.pin?'pinned':''}" draggable="true" data-id="${x.id}" tabindex="0" role="button" aria-label="${esc(x.title)}（拖动或 Alt+↑↓ 排序）" title="拖动可以排序，也可以拖到其他分组"><span class="grip" aria-hidden="true">⋮⋮</span><button class="dot ${x.check?'chk':''}" data-ck="${x.id}" aria-label="${x.done?'取消完成':'标记完成'}"><span>${x.done?'✓':''}</span></button><span class="nm">${esc(x.title)}</span>${x.id===main?'<span class="tag">主</span>':''}${x.date===null?'<span class="mt">未定</span>':''}${x.date<t&&!x.done?`<span class="tag late">${md(x.date)}</span>`:''}${x.date>addDays(t,1)&&!x.pin?`<span class="mt">周${WD[dow(x.date)]}</span>`:x.date===addDays(t,1)&&!x.pin?'<span class="mt">明天</span>':''}<span class="mt num">${x.est}′</span><button class="pin" data-pin="${x.id}" aria-label="${x.pin?'取消置顶':'置顶'}">${svg('pin')}</button></div>`;
+ const g=(k,l,arr,e)=>`<div class="lbl" title="拖动任务可以排序"><span>${l}</span><span class="num">${k==='T'?arr.filter(x=>x.done).length+'/'+arr.length:''}</span></div><div class="grp" data-g="${k}">${arr.map(it).join('')||`<div class="empty">${e}</div>`}</div>`;
+ $('#groups').innerHTML=g('P','置顶',pinned,'点任务右侧图钉置顶')+g('T','今天',td,'今天还没有任务')+g('L','之后',later.slice(0,30),'暂无');
+}
+
+/* ================= 首页 / 输入框 ================= */
+let mode='task',EC=null,feedItems=[];
+const E0=()=>({date:null,est:null,cat:null,main:false,taskId:null,course:null});
+EC=E0();
+function vToday(){
+ return `<div class="hshell ${S.settings.panelOff?'off':''}"><div class="home">${banner()}
+ <h1 class="hello"><span class="logo" aria-hidden="true">T</span><span id="hi">${hello()}</span></h1>
+ <div class="box" id="box">
+  <textarea id="inp" rows="2" placeholder="${ph()}" aria-label="输入任务、补记或反思"></textarea>
+  <div class="parsed" id="parsed"></div>
+  <div class="bar"><button class="sq" id="plus" aria-label="更多选项" title="日期、分类、关联、模板">+</button>
+   <div class="seg" id="seg" role="group" aria-label="记录类型">${[['task','任务'],['log','补记'],['note','反思']].map(([k,l])=>`<button data-m="${k}" class="${mode===k?'on':''}" aria-pressed="${mode===k}">${l}</button>`).join('')}</div>
+   <button class="model" id="mdl" aria-haspopup="menu" title="选择 Agent 用的模型">${esc(modelLabel())} <span aria-hidden="true">⌄</span></button><button class="send" id="send" disabled aria-label="保存">${svg('send')}</button></div>
+ </div>
+ <div class="feed" id="feed">${feedHtml()}</div></div>${todayPanel()}</div>`;}
+function todayPanel(){
+ const t=today(),tasks=S.tasks.filter(x=>x.date===t),done=tasks.filter(x=>x.done).length,mins=dayMin(t),plan=tasks.reduce((n,x)=>n+x.est,0),cs=coursesOn(t),a=S.active,w=tWeek(t);
+ if(S.settings.panelOff)return `<button class="ptab" data-act="panel-on" aria-label="展开今天的进度"><span class="num">${fmtShort(mins)}</span><span class="num">${done}/${tasks.length}</span><span aria-hidden="true">‹</span></button>`;
+ const mon=weekStart(t),wk=WD.map((_,i)=>{const d=addDays(mon,i);return {d,m:d<=t?dayMin(d):null};}),wmax=Math.max(60,...wk.map(x=>x.m||0));
+ return `<section class="tpanel" aria-label="今天的进度">
+ <div class="tph"><div><b>今天</b><small class="num">${dayLabel(t).replace(/^今天 /,'')}${w>=1&&w<=20?' · 第 '+w+' 教学周':''}</small></div><button class="ib" data-act="panel-off" aria-label="收起进度面板" title="收起">›</button></div>
+ ${a?`<button class="plive" data-go="timer"><span class="tag">${a.phase==='ended'?'待收尾':a.phase==='due'?'时间到':a.phase==='paused'?'已暂停':'专注中'}</span><span class="nm">${esc(a.title)}</span><span class="clk num" data-clk></span></button>`:''}
+ <div class="pstats"><div><strong class="num">${fmtShort(mins)}</strong><small>已投入</small></div><div><strong class="num">${done}/${tasks.length}</strong><small>任务完成</small></div><div><strong class="num">${fmtShort(plan)}</strong><small>今天计划</small></div></div>
+ <div class="pbar" title="实际投入 / 今天计划"><i style="width:${plan?Math.min(100,mins/plan*100):0}%"></i></div>
+ <div class="psec"><div class="pl"><span>时间线</span><button class="linkbtn" data-go="review" style="padding:0">回看 ›</button></div>${dayStrip(t,true)}</div>
+ <div class="psec"><div class="pl"><span>本周每天</span><span class="num">${fmtMin(wk.reduce((n,x)=>n+(x.m||0),0))}</span></div><div class="pweek">${wk.map((x,i)=>`<div title="${md(x.d)} ${x.m==null?'':fmtMin(x.m)}"><span class="pb"><i class="${x.d===t?'t':''}" style="height:${x.m?Math.max(4,x.m/wmax*100):0}%"></i></span><small class="${x.d===t?'on':''}">${WD[i]}</small></div>`).join('')}</div></div>
+ ${cs.length?`<div class="psec"><div class="pl"><span>今日课程</span><button class="linkbtn" data-go="schedule" style="padding:0">课表 ›</button></div>${cs.map(c=>`<button class="pcourse" data-course="${t}|${c[1]}|${c[8]}"><small class="num">${slotText(c[1])}</small><span class="nm">${esc(cName(c))}</span></button>`).join('')}</div>`:'<div class="psec"><div class="pl"><span>今日课程</span></div><p class="note-s" style="margin:0">今天没有课</p></div>'}
+ </section>`;}
+const hello=()=>({task:'今天想推进什么？',log:'刚刚做了什么？',note:'今天有什么想记下来的？'})[mode];
+const ph=()=>({task:'写下要做的事，例如：明天 复习模电 45分钟',log:'例如：复习了共射放大电路 40分钟',note:'今天学到了什么？卡在哪里？下一步先做什么？'})[mode];
+function feedHtml(){return (agentPending?pendingHtml():'')+feedItems.slice(0,5).map((f,i)=>`<div class="act"><span>${f.html}</span>${f.undo?`<button class="btn sm" data-undo="${i}">撤销</button>`:''}</div>`).join('');}
+function refreshPanel(){const p=$('.tpanel,.ptab');if(p)p.outerHTML=todayPanel();}
+function feed(html,undo){feedItems.unshift({html,undo});const f=$('#feed');if(f)f.innerHTML=feedHtml();}
+
+/* ---- 解析 ---- */
+const CNN={'零':0,'一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};
+function cnNum(s){if(/^\d+(\.\d+)?$/.test(s))return +s;if(s in CNN)return CNN[s];const m=/^([一二两三四五六七八九])?十([一二三四五六七八九])?$/.exec(s);return m?(m[1]?CNN[m[1]]:1)*10+(m[2]?CNN[m[2]]:0):NaN;}
+const NUM='(\\d+(?:\\.\\d+)?|[一二两三四五六七八九十]{1,3})';
+function parse(text){
+ let s=text,date=null,dl=null,est=null;const t=today();
+ const take=(re,fn)=>{const m=re.exec(s);if(!m)return false;const r=fn(m);if(r===false)return false;s=s.slice(0,m.index)+' '+s.slice(m.index+m[0].length);return true;};
+ take(/(大后天|后天|明天|明晚|今天|今晚)/,m=>{const n={大后天:3,后天:2,明天:1,明晚:1,今天:0,今晚:0}[m[1]];date=addDays(t,n);});
+ if(!date)take(/(下周|下个?星期|下礼拜|本周|这周|周|星期|礼拜)([一二三四五六日天])/,m=>{const k='一二三四五六日天'.indexOf(m[2]);const di=k>5?6:k;let d=addDays(weekStart(t),di);if(/下/.test(m[1]))d=addDays(d,7);else if(!/本|这/.test(m[1])&&d<t)d=addDays(d,7);date=d;});
+ if(!date)take(/(\d{1,2})月(\d{1,2})[日号]?/,m=>{const y=dt(t).getFullYear();let d=y+'-'+pad(m[1])+'-'+pad(m[2]);if(isNaN(dt(d))||dt(d).getMonth()+1!==+m[1])return false;if(d<addDays(t,-180))d=(y+1)+d.slice(4);date=d;});
+ if(!date)take(/(?:^|\s)(\d{1,2})\/(\d{1,2})(?=\s|$)/,m=>{const y=dt(t).getFullYear();const d=y+'-'+pad(m[1])+'-'+pad(m[2]);if(isNaN(dt(d))||dt(d).getMonth()+1!==+m[1])return false;date=d;});
+ // 时长
+ take(new RegExp(NUM+'\\s*个?半\\s*(?:小时|钟头)'),m=>{est=Math.round((cnNum(m[1])+.5)*60);})||
+ take(new RegExp(NUM+'\\s*(?:个)?\\s*(?:小时|钟头|h|hr|hrs)(?![a-z])\\s*(?:'+NUM+'\\s*(?:分钟|分|min|m)(?![a-z]))?','i'),m=>{const h=cnNum(m[1]),mm=m[2]?cnNum(m[2]):0;if(isNaN(h))return false;est=Math.round(h*60+(isNaN(mm)?0:mm));})||
+ take(/半\s*(?:个)?\s*(?:小时|钟头)/,()=>{est=30;})||
+ take(new RegExp(NUM+'\\s*(?:分钟|min|mins|minutes?)(?![a-z])','i'),m=>{const v=cnNum(m[1]);if(isNaN(v))return false;est=Math.round(v);});
+ if(est!==null&&(est<1||est>1440))est=null;
+ if(date)dl=dayLabel(date).split(' ')[0];
+ const past=/(完成了|做完|写完|学完|看完|复习了|学了|做了|看了|写了|练了|背了|花了|用了|刚刚|刚才|已经)/.test(text);
+ let title=s.replace(/[，,、]?\s*(花了|用了|大概|左右|以内)\s*/g,' ').replace(/\s+/g,' ').replace(/^[\s，,。、：:]+|[\s，,。、：:]+$/g,'').replace(/^我\s*/,'').trim();
+ return {title,date,dl,est,cat:catOf(text),past};}
+
+function initComposer(){const inp=$('#inp');if(!inp)return;inp.value=initComposer.keep||'';initComposer.keep='';autosize();chips();}
+function autosize(){const t=$('#inp');if(!t)return;t.style.height='auto';t.style.height=Math.min(t.scrollHeight,220)+'px';}
+/* ---- Agent：本地规则或外部模型，把一句话变成任务 / 补记 / 反思 ---- */
+const AG_DEF=()=>({on:true,model:'local',provider:'openai',modelId:'',baseUrl:'https://api.deepseek.com',perms:{task:true,note:true,cat:true,confirm:true}});
+const ag=()=>{const d=AG_DEF(),a=S.settings.agent||(S.settings.agent={});for(const k in d)if(a[k]===undefined)a[k]=d[k];for(const k in d.perms)if(a.perms[k]===undefined)a.perms[k]=d.perms[k];return a;};
+let agentOnce=false,localOnce=false,agentBusy=null,agentPending=null;
+const KEYK='tplan.v3.apikey';
+const getKey=()=>{try{return localStorage.getItem(KEYK)||'';}catch(e){return '';}};
+const setKey=v=>{try{v?localStorage.setItem(KEYK,v):localStorage.removeItem(KEYK);}catch(e){}};
+const PROV={anthropic:'Anthropic（Claude）',openai:'OpenAI 兼容（DeepSeek、OpenAI、Ollama…）'};
+const remoteReady=()=>{const a=ag();return a.provider==='openai'?!!a.baseUrl&&(!!getKey()||/localhost|127\.0\.0\.1/.test(a.baseUrl)):!!getKey();};
+const modelLabel=()=>{const a=ag();if(!a.on||agentOnce)return 'Agent 关';return a.model==='local'?'本地规则':a.modelId;};
+const agentOn=()=>ag().on&&!agentOnce;
+const useRemote=()=>agentOn()&&!localOnce&&ag().model==='remote'&&remoteReady();
+const NOTEY=/(反思|复盘|卡在|卡住|没想清|没搞懂|学到|收获|总结|错因|错了|下次)/;
+function planItems(v){
+ const a=ag(),on=agentOn(),tk=EC.taskId&&task(EC.taskId),out=[];
+ const lines=v.split('\n').map(l=>l.trim()).filter(Boolean);
+ for(const line of (mode==='note'?[v.trim()]:lines)){
+  const p=parse(line);let type=mode;
+  if(on&&mode==='task'){if(p.past&&p.est)type='log';else if(NOTEY.test(line))type='note';}
+  if(type==='task'&&on&&!a.perms.task)type=null;
+  if(type==='note'&&on&&!a.perms.note)type=null;
+  const cat=EC.cat||tk?.cat||(on&&a.perms.cat?p.cat:'other');
+  const title=(type==='note'?line:(p.title||line)).slice(0,300);
+  out.push({type,line,title,date:EC.main&&type==='task'?today():EC.date||p.date||today(),est:EC.est||p.est||(type==='task'?30:null),cat});
+ }
+ return out;}
+const TYPE_L={task:'任务',log:'补记',note:'反思'};
+function chips(){
+ const inp=$('#inp');if(!inp)return;const v=inp.value,h=[],x=(k,txt)=>`<span class="chip hit">${esc(txt)}<button class="x" data-x="${k}" aria-label="移除">×</button></span>`;
+ if(EC.taskId&&task(EC.taskId))h.push(x('taskId','关联：'+task(EC.taskId).title));
+ if(EC.course)h.push(x('course','课程：'+EC.course));
+ if(EC.date)h.push(x('date','日期：'+dayLabel(EC.date)));
+ if(EC.est)h.push(x('est',(mode==='log'?'用时 ':'预计 ')+EC.est+' 分钟'));
+ if(EC.cat)h.push(x('cat','分类：'+catLabel(EC.cat)));
+ if(EC.main&&mode==='task')h.push(x('main','今日主任务'));
+ if(agentOnce)h.push(x('agentOnce','这一条不使用 Agent'));
+ if(localOnce&&!agentOnce)h.push(x('localOnce','这一条改用本地规则'));
+ let ok=!!v.trim()&&!agentBusy;
+ if(v.trim()){
+  const items=planItems(v);
+  if(useRemote()){h.push(`<span class="chip hit">${esc(ag().modelId)} 会整理这段文字，保存前给你确认</span>`);}
+  else if(items.length===1){const it=items[0];
+   if(!it.type){h.push('<span class="chip warn">Agent 没有这类记录的权限，可在模型菜单的设置里打开</span>');ok=false;}
+   else{
+    if(it.type!==mode)h.push(`<span class="chip hit">Agent：记成${TYPE_L[it.type]}</span>`);
+    if(it.type!=='note'&&!EC.date)h.push(`<span class="chip ${parse(it.line).date?'hit':''}">${dayLabel(it.date)}</span>`);
+    if(it.type==='task'&&!EC.est)h.push(`<span class="chip ${parse(it.line).est?'hit':''}">预计 ${it.est} 分钟</span>`);
+    if(it.type==='log'&&!EC.est){if(it.est)h.push(`<span class="chip hit">用时 ${it.est} 分钟</span>`);else{h.push('<span class="chip warn">还缺时长，例如 40分钟</span>');ok=false;}}
+    if(!EC.cat&&!EC.taskId)h.push(`<span class="chip ${it.cat!=='other'?'hit':''}">${catLabel(it.cat)}</span>`);
+    if(!agentOn()&&mode==='task'&&parse(it.line).past)h.push(`<button class="chip warn" data-act="to-log">像是已经做完的事 · 改成补记</button>`);
+   }}
+  else{const c={};for(const it of items)c[it.type||'skip']=(c[it.type||'skip']||0)+1;
+   h.push(`<span class="chip hit">${agentOn()?'Agent 拆成：':''}${Object.entries(c).map(([k,n])=>n+' 条'+(TYPE_L[k]||'无权限跳过')).join(' · ')}</span>`);
+   if(items.some(it=>it.type==='log'&&!it.est)){h.push('<span class="chip warn">有补记缺少时长</span>');ok=false;}}
+ }
+ $('#parsed').innerHTML=h.join('');$('#send').disabled=!ok;const m=$('#mdl');if(m)m.innerHTML=`${esc(modelLabel())} <span aria-hidden="true">⌄</span>`;}
+function commitItems(items,src='app'){
+ const made=[],tk=EC.taskId&&task(EC.taskId);
+ for(const it of items){if(!it.type)continue;
+  if(it.type==='task'){const t=newTask({title:it.title,cat:it.cat,date:it.date,est:it.est||30});S.tasks.push(t);made.push(['t',t.id]);if(EC.main)S.main[today()]=t.id;feed(`<b>✓ 已添加任务</b> ${esc(t.title)} · ${dayLabel(t.date)} · ${t.est} 分钟 · ${catLabel(t.cat)}${EC.main?' · 今日主任务':''}`,null);}
+  else if(it.type==='log'){if(!it.est)continue;const s={id:uid('s'),title:it.title||tk?.title||it.line,taskId:tk?tk.id:null,cat:it.cat,course:EC.course,date:it.date,start:null,end:null,minutes:Math.max(1,Math.min(1440,Math.round(it.est))),note:'',src:src==='app'?'manual':'agent'};S.sessions.push(s);made.push(['s',s.id]);feed(`<b>✓ 已补记</b> ${esc(s.title)} · ${dayLabel(s.date)} · ${s.minutes} 分钟`,null);}
+  else{const n={id:uid('n'),date:it.date||today(),text:it.title,taskId:tk?tk.id:null,course:EC.course,cat:it.cat,at:Date.now(),src};S.notes.push(n);made.push(['n',n.id]);feed(`<b>✓ 已记下反思</b> ${esc(n.text.slice(0,40))}${n.text.length>40?'…':''}${tk?' · 关联「'+esc(tk.title)+'」':''}`,null);}}
+ if(made.length)feedItems[0].undo=made;
+ save();renderSide();refreshPanel();return made.length;}
+function clearComposer(){const inp=$('#inp');if(inp)inp.value='';EC=E0();agentOnce=false;localOnce=false;autosize();chips();}
+async function send(){
+ const inp=$('#inp'),v=inp.value.trim();if(!v||agentBusy)return;
+ if(useRemote()){
+  agentBusy=v;feed(`<span class="mt">${esc(ag().modelId)} 正在整理……</span>`,null);chips();
+  try{const items=await remoteItems(v);agentBusy=null;feedItems.shift();
+   if(!items.length)throw new Error('模型没有返回可用的条目');
+   if(ag().perms.confirm){agentPending={items,ctx:{...EC}};clearComposer();showPending();}
+   else{commitItems(items,'agent');clearComposer();}
+  }catch(err){agentBusy=null;feedItems.shift();$('#feed').innerHTML=feedHtml();toast('模型调用失败：'+err.message+'。文字还在输入框里，这一条先改用本地规则，检查后再保存。');localOnce=true;chips();}
+  return;}
+ const items=planItems(v);if(items.every(it=>!it.type))return;
+ commitItems(items);clearComposer();}
+function showPending(){const f=$('#feed');if(f)f.innerHTML=feedHtml();}
+function pendingHtml(){const p=agentPending;return `<div class="act agentc"><span><b style="color:var(--accent-ink)">${esc(ag().modelId)} 的整理结果</b>，确认后才会保存：<span class="agl">${p.items.map((it,i)=>`<label class="check"><input type="checkbox" data-agi="${i}" ${it.type?'checked':'disabled'}><span><span class="tag">${TYPE_L[it.type]||'无权限'}</span> ${esc(it.title)} <span class="mt">${it.type==='note'?'':dayLabel(it.date)+(it.est?' · '+it.est+' 分钟':'')+' · '}${catLabel(it.cat)}</span></span></label>`).join('')}</span><span class="row"><button class="btn sm pri" data-act="ag-save">保存选中的</button><button class="btn sm" data-act="ag-drop">放弃</button></span></span></div>`;}
+const SYS=t=>`你是 T计划 的记录助手。把用户输入整理成 JSON，只输出 JSON，不要解释。
+今天是 ${t}（${'一二三四五六日'[dow(t)]}）。
+格式：{"items":[{"type":"task|log|note","title":"","date":"YYYY-MM-DD","minutes":30,"category":"school|math|english|other"}]}
+规则：要做的事是 task（minutes 为预计分钟，没写就 30）；已经做完、带时长的事是 log（minutes 为实际分钟，没写时长就不要用 log）；感想、卡点、总结是 note（minutes 省略）。
+category：学校专业课=school，考研数学=math，六级/英语=english，其他=other。
+只根据用户写出的内容整理，不要编造任务，不要合并或改写用户的意思，title 尽量保留原文。`;
+async function remoteItems(text){
+ const a=ag(),key=getKey(),t=today(),ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),25000);let raw;
+ try{
+  if(a.provider==='anthropic'){
+   const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:ctl.signal,headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:a.modelId,max_tokens:1200,system:SYS(t),messages:[{role:'user',content:text}]})});
+   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j?.error?.message||('HTTP '+r.status));raw=(j.content||[]).map(c=>c.text||'').join('');
+  }else{
+   const r=await fetch(a.baseUrl.replace(/\/+$/,'')+'/chat/completions',{method:'POST',signal:ctl.signal,headers:{'content-type':'application/json',...(key?{authorization:'Bearer '+key}:{})},body:JSON.stringify({model:a.modelId,temperature:0,messages:[{role:'system',content:SYS(t)},{role:'user',content:text}]})});
+   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j?.error?.message||('HTTP '+r.status));raw=j.choices?.[0]?.message?.content||'';
+  }
+ }catch(e){throw new Error(e.name==='AbortError'?'超过 25 秒没有响应':/Failed to fetch|NetworkError|Load failed/.test(e.message)?'连不上服务（在线预览页面不允许联网，请在本地打开文件；也可能是地址或网络问题）':e.message);}
+ finally{clearTimeout(timer);}
+ const m=raw.match(/\{[\s\S]*\}/);if(!m)throw new Error('返回的不是 JSON');
+ let o;try{o=JSON.parse(m[0]);}catch(e){throw new Error('返回的 JSON 无法解析');}
+ const P=a.perms;
+ return (Array.isArray(o.items)?o.items:[]).slice(0,30).map(it=>{let type=['task','log','note'].includes(it.type)?it.type:'task';if(type==='task'&&!P.task)type=null;if(type==='note'&&!P.note)type=null;
+  const date=/^\d{4}-\d{2}-\d{2}$/.test(it.date||'')&&!isNaN(dt(it.date))?it.date:t;const min=Math.round(+it.minutes);
+  return {type,line:String(it.title||''),title:String(it.title||'').trim().slice(0,300)||'未命名',date,est:min>=1&&min<=1440?min:(type==='task'?30:null),cat:EC.cat||(P.cat&&CHOICES.includes(it.category)?it.category:'other')};}).filter(it=>!(it.type==='log'&&!it.est));}
+function modelMenu(btn){if(pop){closePop();return;}const a=ag(),ready=remoteReady();
+ const p=openPop(`<div class="gh">Agent 用哪个来整理</div>
+ <button class="r" data-am="local"><span>本地规则<small>不联网，只识别日期、时长、分类，并把“做完了”的事记成补记</small></span>${a.model==='local'?'<span class="ck">✓</span>':''}</button>
+ <button class="r" data-am="remote"><span>${esc(a.modelId)}<small>${ready?esc(PROV[a.provider])+' · 结果先给你确认再保存':'还没有接入，点这里去填写服务和密钥'}</small></span>${a.model==='remote'?'<span class="ck">✓</span>':''}</button>
+ <hr><button class="r" data-am="toggle"><span>Agent ${a.on?'已开启':'已关闭'}<small>${a.on?'关闭后只按你选的类型和原文保存，不自动拆分、不自动分类':'打开后会自动拆分和分类'}</small></span><span class="ck">${a.on?'开':'关'}</span></button>
+ <button class="r" data-am="once"><span>这一条不使用 Agent<small>只对下一次保存生效，之后自动恢复</small></span>${agentOnce?'<span class="ck">✓</span>':''}</button>
+ <button class="r" data-am="cfg"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>模型与 Agent 设置</span></button>`,btn);
+ p.addEventListener('click',ev=>{ev.stopPropagation();const b=ev.target.closest('button');if(!b)return;const k=b.dataset.am;
+  if(k==='local')a.model='local';
+  if(k==='remote'){if(!remoteReady()){closePop();agentDialog();return;}a.model='remote';}
+  if(k==='toggle')a.on=!a.on;
+  if(k==='once')agentOnce=!agentOnce;
+  if(k==='cfg'){closePop();agentDialog();return;}
+  save();closePop();chips();$('#inp')?.focus();});}
+function agentDialog(){const a=ag(),P=a.perms,key=getKey();
+ openDlg(`<h2>模型与 Agent 设置</h2><div class="form">
+ <label class="f">服务<select class="in" id="agProv">${Object.entries(PROV).map(([k,l])=>`<option value="${k}" ${a.provider===k?'selected':''}>${l}</option>`).join('')}</select></label>
+ <label class="f" id="agUrlRow" ${a.provider==='openai'?'':'hidden'}>接口地址<input class="in" id="agUrl" value="${esc(a.baseUrl)}" placeholder="https://api.deepseek.com 或 http://localhost:11434/v1"></label>
+ <label class="f">模型<input class="in" id="agModel" value="${esc(a.modelId)}" list="agModels" placeholder="以服务商控制台里的模型名为准"><datalist id="agModels"><option value="deepseek-chat"><option value="qwen2.5:7b"></datalist></label>
+ <label class="f">API Key<input class="in" id="agKey" type="password" value="${esc(key)}" placeholder="sk-…（本地 Ollama 可以留空）" autocomplete="off"></label>
+ <p class="note-s">密钥用 Windows 当前账户加密保存在本机，不进入导出的备份。首页整理发送本次输入；AI 提议发送目标与所选周的待办摘要；AI 复盘发送所选范围的记录摘要及你勾选的反思。点击生成才会请求你配置的模型，调用可能产生费用。新提议始终需要确认写入。</p>
+ <fieldset class="agp"><legend>Agent 可以做的事</legend>
+ <label class="check"><input type="checkbox" id="agP_task" ${P.task?'checked':''}>创建任务</label>
+ <label class="check"><input type="checkbox" id="agP_note" ${P.note?'checked':''}>把反思写进记录</label>
+ <label class="check"><input type="checkbox" id="agP_cat" ${P.cat?'checked':''}>自动判断分类</label>
+ <label class="check"><input type="checkbox" id="agP_confirm" ${P.confirm?'checked':''}>外部模型的结果先让我确认再保存</label></fieldset>
+ <div id="agTest"></div></div>
+ <div class="dlgfoot"><button class="btn" data-act="ag-test" style="margin-right:auto">测试连接</button><button class="btn" data-act="dlg-close">取消</button><button class="btn pri" data-act="ag-cfg-save">保存</button></div>`);}
+function agentReadForm(){const a=ag();a.provider=$('#agProv').value;a.baseUrl=$('#agUrl').value.trim()||a.baseUrl;a.modelId=$('#agModel').value.trim()||a.modelId;
+ for(const k of ['task','note','cat','confirm'])a.perms[k]=$('#agP_'+k).checked;setKey($('#agKey').value.trim());}
+function setMode(m){mode=m;if(view!=='today')return;$$('#seg button').forEach(b=>{b.classList.toggle('on',b.dataset.m===m);b.setAttribute('aria-pressed',String(b.dataset.m===m));});$('#inp').placeholder=ph();$('#hi').textContent=hello();chips();$('#inp').focus();}
+function undo(i){const f=feedItems[i];if(!f||!f.undo)return;for(const [k,id] of f.undo){if(k==='t'){S.tasks=S.tasks.filter(x=>x.id!==id);for(const d in S.main)if(S.main[d]===id)delete S.main[d];}if(k==='s')S.sessions=S.sessions.filter(x=>x.id!==id);if(k==='n')S.notes=S.notes.filter(x=>x.id!==id);}
+ f.undo=null;f.html='<span class="mt">已撤销：</span>'+f.html.replace(/<b>.*?<\/b>/,'');save();$('#feed').innerHTML=feedHtml();renderSide();refreshPanel();}
+
+/* ---- + 菜单 ---- */
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;}}
+function openPop(html,anchor){closePop();pop=document.createElement('div');pop.className='pop';pop.innerHTML=html;document.body.appendChild(pop);place(anchor);return pop;}
+function place(anchor){if(!pop)return;const r=anchor.getBoundingClientRect();pop.style.left=Math.max(8,Math.min(r.left,innerWidth-pop.offsetWidth-8))+'px';const below=innerHeight-r.bottom-12,above=r.top-12;if(pop.offsetHeight>below&&above>below){pop.style.top='auto';pop.style.bottom=(innerHeight-r.top+6)+'px';pop.style.maxHeight=above+'px';}else{pop.style.top=(r.bottom+6)+'px';pop.style.bottom='auto';pop.style.maxHeight=Math.max(200,below)+'px';}}
+const prow=(ic,l,d,right,attr)=>`<button class="r" ${attr}>${svg(ic)}<span>${l}${d?`<small>${esc(d)}</small>`:''}</span>${right==='›'?'<span class="ch">›</span>':right?'<span class="ck">✓</span>':''}</button>`;
+const back=t=>`<button class="r" data-v="root"><span class="ch" style="margin:0">‹</span><span>${t}</span></button><hr>`;
+function plusHtml(v){
+ const t=today();
+ if(v==='task'){const L=S.tasks.filter(x=>!x.done).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).slice(0,40);return back('关联任务')+(EC.taskId?'<button class="r" data-pt="">不关联</button>':'')+(L.map(x=>`<button class="r" data-pt="${x.id}"><span>${esc(x.title)}<small>${catLabel(x.cat)} · ${dayLabel(x.date)}</small></span>${EC.taskId===x.id?'<span class="ck">✓</span>':''}</button>`).join('')||'<div class="empty">没有未完成的任务</div>');}
+ if(v==='course'){const tc=coursesOn(t).map(cName),all=[...new Set(Object.values(COURSE_NAME))].filter(n=>!tc.includes(n));return back('关联课程')+(tc.length?'<div class="gh">今天的课</div>'+tc.map(n=>`<button class="r" data-pc="${esc(n)}"><span>${esc(n)}</span>${EC.course===n?'<span class="ck">✓</span>':''}</button>`).join(''):'')+'<div class="gh">其他课程</div>'+all.map(n=>`<button class="r" data-pc="${esc(n)}"><span>${esc(n)}</span>${EC.course===n?'<span class="ck">✓</span>':''}</button>`).join('');}
+ if(v==='cat')return back('分类（只对这一条生效）')+`<button class="r" data-cat="">按文字自动判断</button>`+CHOICES.map(c=>`<button class="r" data-cat="${c}"><span class="cd" style="background:${catColor(c)}"></span><span>${CAT[c]}</span>${EC.cat===c?'<span class="ck">✓</span>':''}</button>`).join('');
+ if(v==='dt'){const ds=[0,1,2].map(n=>addDays(t,n));return back(mode==='log'?'日期与用时':'日期与时长')+`<div class="gh">日期</div><div class="opts">${ds.map((d,n)=>`<button data-dd="${d}" class="${EC.date===d?'on':''}">${['今天','明天','后天'][n]}</button>`).join('')}${mode==='log'?`<button data-dd="${addDays(t,-1)}" class="${EC.date===addDays(t,-1)?'on':''}">昨天</button>`:''}<input type="date" id="dd" value="${EC.date||''}" aria-label="选择日期"></div><div class="gh">${mode==='log'?'用时':'预计时长'}</div><div class="opts">${[15,25,30,45,60,90].map(m=>`<button data-mm="${m}" class="${EC.est===m?'on':''}">${m} 分钟</button>`).join('')}<input type="number" id="dm" min="1" max="1440" step="5" placeholder="自定义" style="width:86px" value="${EC.est&&![15,25,30,45,60,90].includes(EC.est)?EC.est:''}" aria-label="自定义分钟"></div><hr><button class="r" data-clr="1">清除日期与时长</button>`;}
+ const dtx=[EC.date&&dayLabel(EC.date),EC.est&&EC.est+' 分钟'].filter(Boolean).join(' · ');
+ let h=`<div class="gh">补全信息</div>`+prow('cal',mode==='log'?'日期与用时':'日期与时长',dtx||'代替手打“明天 45分钟”','›','data-v="dt"')+prow('tag','分类',EC.cat?catLabel(EC.cat):'默认按文字判断','›','data-v="cat"');
+ if(mode==='task')h+=prow('star','设为今日主任务','日期会改成今天',EC.main,'data-act2="main"');
+ h+=`<div class="gh">关联</div>`;
+ if(mode!=='task')h+=prow('link','关联任务',EC.taskId&&task(EC.taskId)?task(EC.taskId).title:'把这条记录挂到某个任务','›','data-v="task"');
+ h+=prow('book','关联课程',EC.course||'比如今天上过的课','›','data-v="course"');
+ h+=`<div class="gh">工具</div>`+prow('tpl','套用复盘模板','做了什么 / 卡在哪 / 下一步','','data-act2="tpl"')+prow('tree','拆成决策树','把输入框里的目标拆成带检查点的步骤','','data-act2="dtree"');
+ return h;}
+function onPlus(btn){if(pop){closePop();return;}const p=openPop(plusHtml('root'),btn);const re=v=>{p.innerHTML=plusHtml(v);place(btn);},fin=()=>{closePop();chips();$('#inp')?.focus();};
+ p.addEventListener('change',ev=>{if(ev.target.id==='dd'){EC.date=ev.target.value||null;re('dt');chips();}if(ev.target.id==='dm'){const n=+ev.target.value;EC.est=n>=1&&n<=1440?Math.round(n):null;re('dt');chips();}});
+ p.addEventListener('click',ev=>{ev.stopPropagation();const b=ev.target.closest('button');if(!b)return;const a=b.dataset;
+  if(a.v)return re(a.v);
+  if(a.pt!==undefined){EC.taskId=a.pt||null;return fin();}
+  if(a.pc!==undefined){EC.course=EC.course===a.pc?null:a.pc;return fin();}
+  if(a.cat!==undefined){EC.cat=a.cat||null;return fin();}
+  if(a.dd){EC.date=a.dd;re('dt');return chips();}
+  if(a.mm){EC.est=+a.mm;re('dt');return chips();}
+  if(a.clr){EC.date=null;EC.est=null;re('dt');return chips();}
+  if(a.act2==='main'){EC.main=!EC.main;if(EC.main)EC.date=null;return fin();}
+  if(a.act2==='tpl'){closePop();setMode('note');$('#inp').value='做了什么：\n卡在哪：\n下一步先做：';autosize();chips();return $('#inp').focus();}
+  if(a.act2==='dtree'){closePop();const g=$('#inp').value.trim();S.ui.treeGoal=g;S.ui.treeNew=true;go('tree');return;}
+ });}
+
+/* ================= 计时 ================= */
+let draft={title:'',taskId:null,cat:null,course:null,dur:25};
+let audio=null;
+function el(a,now=Date.now()){if(!a)return 0;let e=a.acc+(a.phase==='running'?now-a.lastAt:0);if(a.mode==='down')e=Math.min(e,a.budget);return Math.max(0,e);}
+function startTimer(){
+ if(S.active)return toast('先结束当前这一轮');
+ const title=($('#tTitle')?.value||draft.title||'').trim();if(!title){$('#tTitle')?.focus();return toast('写下这一轮要做的事');}
+ const tk=draft.taskId&&task(draft.taskId);const now=Date.now();
+ S.active={id:uid('s'),title,taskId:tk?tk.id:null,cat:draft.cat||tk?.cat||catOf(title),course:draft.course||null,mode:draft.dur==='up'?'up':'down',budget:(draft.dur==='up'?0:draft.dur)*60000,startedAt:now,lastAt:now,acc:0,phase:'running',pauses:0,endedAt:null};
+ try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume?.();}catch(e){}
+ draft={title:'',taskId:null,cat:null,course:null,dur:draft.dur};save();render();}
+function tctl(k){const a=S.active;if(!a)return;const now=Date.now();
+ if(k==='pause'&&a.phase==='running'){a.acc=el(a,now);a.phase='paused';a.pauses++;}
+ else if(k==='resume'&&a.phase==='paused'){a.lastAt=now;a.phase='running';}
+ else if(k==='add5'){a.budget+=5*60000;if(a.phase==='due'){a.phase='running';a.lastAt=now;}}
+ else if(k==='up'){a.mode='up';if(a.phase==='due'){a.phase='running';a.lastAt=now;}}
+ else if(k==='end'){a.acc=el(a,now);a.phase='ended';a.endedAt=now;}
+ save();render();}
+function wrapSave(){const a=S.active;if(!a)return;const min=Math.round(+$('#wMin').value);if(!(min>=1&&min<=1440)){$('#wMin').focus();return toast('用时请填 1—1440 分钟');}
+ const note=$('#wNote').value.trim(),stuck=$('#wStuck').value.trim(),d=dateOfMs(a.startedAt);
+ const s={id:a.id,title:a.title,taskId:a.taskId,cat:a.cat,course:a.course,date:d,start:a.startedAt,end:a.endedAt,minutes:min,note,src:'timer'};S.sessions.push(s);
+ if(stuck)S.notes.push({id:uid('n'),date:d,text:stuck,taskId:a.taskId,course:a.course,cat:a.cat,at:Date.now(),src:'timer'});
+ const tk=a.taskId&&task(a.taskId),markDone=$('#wDone')?.checked;S.active=null;
+ if(tk&&markDone)setDone(tk,true);else save();
+ toast(`已记录 ${min} 分钟${stuck?' · 想法已存为反思':''}${tk&&markDone?' · 任务已完成':''}`);render();}
+function vTimer(){
+ const a=S.active,t=today();
+ const ph=a?a.phase:'ready';
+ const cap={ready:'选好一件事，给它一段时间',running:a?.mode==='up'?'正计时 · 想停时点结束':'专注于眼前这一步',paused:'已暂停，时间不会累计',due:'时间到了，先停下来判断',ended:'这一轮结束了，留个记录'}[ph];
+ const dial=`<section class="card dial"><div class="what">${esc(a?a.title:'这一轮，只推进一件事')}</div>
+  <div class="ring ${ph==='due'?'due':ph==='paused'||ph==='ended'?'paused':''}" id="ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="trk" cx="60" cy="60" r="52"/><circle class="arc" id="arc" cx="60" cy="60" r="52" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"${a?'':' style="opacity:0"'}/></svg><div class="face"><div class="clock" data-clk id="bigClock">${a?'':clock((draft.dur==='up'?0:draft.dur)*60000)}</div><div class="cap">${cap}</div></div></div>
+  <div class="ctrls">${!a?`<button class="btn acc" data-act="t-start">${svg('play')}开始</button>`:ph==='running'?`<button class="btn acc" data-act="t-pause">暂停</button><button class="btn" data-act="t-end">结束</button>${a.mode==='down'?'<button class="btn" data-act="t-add5">+5 分钟</button>':''}`:ph==='paused'?`<button class="btn acc" data-act="t-resume">继续</button><button class="btn" data-act="t-end">结束</button>`:ph==='due'?`<button class="btn acc" data-act="t-end">结束并记录</button><button class="btn" data-act="t-add5">再给 5 分钟</button><button class="btn" data-act="t-up">改为正计时继续</button>`:''}${a&&ph!=='ended'&&'documentPictureInPicture' in window?'<button class="btn" data-act="t-pip" title="在其他窗口上方显示一个小计时器">小窗</button>':''}</div></section>`;
+ let side='';
+ if(!a){const open=S.tasks.filter(x=>!x.done&&x.date<=t).concat(S.tasks.filter(x=>!x.done&&x.date>t).slice(0,3)).slice(0,8);
+  side=`<section class="card side"><h2>这一轮做什么</h2><div class="form">
+  <label class="f">内容<input class="in" id="tTitle" maxlength="150" value="${esc(draft.title)}" placeholder="例如：弄懂共射放大电路的静态工作点" autocomplete="off"></label>
+  ${open.length?`<div class="f"><span class="sub">从任务里选</span><div class="tchips">${open.map(x=>`<button class="chip ${draft.taskId===x.id?'hit':''}" data-pick="${x.id}">${esc(x.title.length>16?x.title.slice(0,16)+'…':x.title)}${x.date<t?' · 逾期':''}</button>`).join('')}${draft.taskId?'<button class="chip" data-pick="">不关联</button>':''}</div></div>`:''}
+  <div class="f"><span class="sub">时长</span><div class="durs">${[15,25,45,60].map(m=>`<button data-dur="${m}" class="${draft.dur===m?'on':''}">${m}′</button>`).join('')}<button data-dur="up" class="${draft.dur==='up'?'on':''}">正计时</button><input class="in" id="tCustom" type="number" min="1" max="180" placeholder="自定义" aria-label="自定义分钟" value="${typeof draft.dur==='number'&&![15,25,45,60].includes(draft.dur)?draft.dur:''}"></div></div>
+  <p class="note-s">计时结束后会直接记为一段时间记录，分钟数可以改。任务是否完成，需要你单独勾选。</p></div></section>`;}
+ else if(ph==='ended'){const min=Math.max(1,Math.round(el(a)/60000)),tk=a.taskId&&task(a.taskId);
+  side=`<section class="card side"><h2>留个记录</h2><div class="form">
+  <dl class="kv"><dt>时间</dt><dd class="num">${hm(a.startedAt)}–${hm(a.endedAt)}${a.pauses?' · 暂停 '+a.pauses+' 次':''}</dd><dt>计时</dt><dd class="num">${clock(el(a))}</dd></dl>
+  <label class="f">用时（分钟）<input class="in" id="wMin" type="number" min="1" max="1440" value="${min}" style="max-width:120px"></label>
+  <label class="f">做了什么（可选）<input class="in" id="wNote" maxlength="300" placeholder="${esc(a.title)}"></label>
+  ${tk&&!tk.done?`<label class="check"><input type="checkbox" id="wDone">同时把「${esc(tk.title)}」标记为完成</label>`:''}
+  <label class="f">卡在哪 / 想法（可选，会存为反思）<textarea class="in" id="wStuck" maxlength="2000" rows="2"></textarea></label>
+  <div class="row"><button class="btn acc" data-act="w-save">保存这段时间</button><button class="btn" data-act="w-discard">放弃这一轮</button></div><div id="wConfirm"></div></div></section>`;}
+ else{const tk=a.taskId&&task(a.taskId);side=`<section class="card side"><h2>正在进行</h2><dl class="kv"><dt>开始</dt><dd class="num">${hm(a.startedAt)}</dd><dt>方式</dt><dd>${a.mode==='up'?'正计时':'倒计时 '+Math.round(a.budget/60000)+' 分钟'}</dd><dt>任务</dt><dd>${tk?esc(tk.title):'不关联任务'}</dd><dt>分类</dt><dd>${catLabel(a.cat)}</dd>${a.course?`<dt>课程</dt><dd>${esc(a.course)}</dd>`:''}</dl><p class="note-s" style="margin-top:12px">可以切到别的页面，计时会继续；关掉页面再打开也会接着算。</p></section>`;}
+ const ss=S.sessions.filter(s=>s.date===t);
+ return `<div class="page">${banner()}<div class="ph"><div><h1>计时</h1><p>一次只推进一件事，结束时留下这段时间做了什么。</p></div></div>
+ <div class="tgrid ${a?'':'ready'}">${dial}${side}</div>
+ <section class="card"><div class="ph" style="align-items:baseline"><h2>今天的时间线</h2><span class="sub num">共 ${fmtMin(dayMin(t))} · ${ss.length} 段</span></div>${dayStrip(t)}${dayList(t,true)}<div class="row" style="margin-top:10px"><button class="btn sm" data-act="add-session" data-date="${t}">＋ 补记一段</button><button class="btn sm" data-go="review">看更多回看</button></div></section></div>`;}
+function tick(){
+ const a=S.active,now=Date.now();
+ if(a&&a.phase==='running'&&a.mode==='down'&&el(a,now)>=a.budget){a.acc=a.budget;a.phase='due';save();beep();toast('时间到了，先停下来判断：结束，还是再给 5 分钟？');if(view==='timer'||view==='today')render();return;}
+ const e=el(a,now),txt=!a?'':a.phase==='ended'?'待收尾':a.mode==='down'?clock(a.budget-e):clock(e);
+ $$('[data-clk]').forEach(x=>x.textContent=a&&a.phase==='ended'?clock(e):txt);
+ if(!a){const bc=$('#bigClock');if(bc)bc.textContent=clock((draft.dur==='up'?0:draft.dur)*60000);}
+ const arc=$('#arc');if(arc&&!a)arc.setAttribute('stroke-dashoffset','100');if(arc&&a){const p=a.mode==='down'?e/a.budget:(e%3600000)/3600000;arc.setAttribute('stroke-dashoffset',String(100-Math.min(100,p*100)));}
+ for(const id of ['sidePill','topPill']){const p=$('#'+id);if(!p)continue;p.hidden=!a;if(a){p.className='tpill '+(a.phase==='due'||a.phase==='ended'?'due':a.phase==='paused'?'paused':'');p.innerHTML=`<i></i><span class="num">${a.phase==='due'?'时间到':txt}</span>`;}}
+ const nc=$('#navClock');if(nc)nc.textContent=a?(a.phase==='due'?'时间到':txt):'';
+ document.title=a?(a.phase==='due'?'⏰ 时间到 · T计划':a.phase==='ended'?'待收尾 · T计划':txt+' · '+a.title):'T计划';
+ if(pip)pipUpdate();
+}
+function beep(){try{if(!audio)return;const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=660;g.gain.setValueAtTime(.0001,audio.currentTime);g.gain.exponentialRampToValueAtTime(.2,audio.currentTime+.05);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+1.1);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+1.2);}catch(e){}}
+let pip=null;
+async function openPip(){try{if(pip){pip.close();pip=null;return;}const w=await documentPictureInPicture.requestWindow({width:260,height:130});pip=w;const st=w.document.createElement('style');st.textContent=`body{margin:0;font-family:system-ui,"Microsoft YaHei",sans-serif;background:${getComputedStyle(document.body).backgroundColor};color:${getComputedStyle(document.body).color};display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:6px}#c{font:400 40px ui-monospace,Consolas,monospace}#t{font-size:12px;opacity:.7;max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}button{border:1px solid #8885;background:none;color:inherit;border-radius:8px;padding:2px 12px;cursor:pointer}`;w.document.head.append(st);w.document.body.innerHTML='<div id="t"></div><div id="c"></div><button id="b"></button>';w.document.getElementById('b').onclick=()=>{const a=S.active;if(!a)return;tctl(a.phase==='running'?'pause':a.phase==='paused'?'resume':'end');};w.addEventListener('pagehide',()=>{pip=null;});pipUpdate();}catch(e){pip=null;toast('这个环境不支持小窗计时');}}
+function pipUpdate(){if(!pip)return;const a=S.active,d=pip.document;if(!a){d.getElementById('c').textContent='--:--';d.getElementById('t').textContent='没有进行中的计时';d.getElementById('b').hidden=true;return;}const e=el(a);d.getElementById('t').textContent=a.title;d.getElementById('c').textContent=a.phase==='due'?'时间到':a.mode==='down'?clock(a.budget-e):clock(e);const b=d.getElementById('b');b.hidden=a.phase==='ended';b.textContent=a.phase==='running'?'暂停':a.phase==='paused'?'继续':'结束';}
+
+/* ---- 时间线与列表（计时页和回看共用） ---- */
+function dayStrip(d,small){
+ const ss=S.sessions.filter(s=>s.date===d&&s.start),now=Date.now();let h0=6,h1=24;
+ for(const s of ss){const a=new Date(s.start),b=new Date(s.end||s.start);h0=Math.min(h0,a.getHours());if(dateOfMs(s.end||s.start)!==d)h1=24;}
+ const base=dt(d);base.setHours(h0,0,0,0);const span=(h1-h0)*3600000,pos=ms=>Math.max(0,Math.min(100,(ms-base)/span*100));
+ const act=S.active&&S.active.phase!=='ended'&&dateOfMs(S.active.startedAt)===d?S.active:null;
+ const blocks=ss.map(s=>`<i class="blk" style="left:${pos(s.start)}%;width:${Math.max(.4,pos(s.end)-pos(s.start))}%;background:${catColor(s.cat)}" title="${hm(s.start)}–${hm(s.end)} ${esc(s.title)}"></i>`).join('')+(act?`<i class="blk" style="left:${pos(act.startedAt)}%;width:${Math.max(.4,pos(now)-pos(act.startedAt))}%;background:${catColor(act.cat)};opacity:.45" title="进行中"></i>`:'')+(d===today()?`<i class="now" style="left:${pos(now)}%"></i>`:'');
+ const step=small?6:(h1-h0)>12?3:2,ticks=[];for(let h=h0;h<=h1;h+=step)ticks.push(`<span style="left:${(h-h0)/(h1-h0)*100}%">${h}:00</span>`);
+ return `<div class="strip" role="img" aria-label="${md(d)} 的时间分布">${blocks}</div><div class="ticks">${ticks.join('')}</div>`;}
+function dayItems(d,filter='all'){
+ const it=[];
+ if(filter!=='note')for(const s of S.sessions.filter(s=>s.date===d))it.push({k:'s',t:s.start??Infinity,o:s});
+ if(filter!=='time')for(const n of S.notes.filter(n=>n.date===d))it.push({k:'n',t:n.at||Infinity,o:n});
+ if(filter==='all')for(const t of S.tasks.filter(t=>t.done&&t.doneAt&&dateOfMs(t.doneAt)===d))it.push({k:'d',t:t.doneAt,o:t});
+ return it.sort((a,b)=>a.t-b.t);}
+function dayList(d,compact,filter='all'){
+ const it=dayItems(d,filter);if(!it.length)return `<p class="empty" style="padding:8px 0">${d===today()?'今天还没有记录。开始一轮计时，或者补记一段。':'这一天没有记录。'}</p>`;
+ return `<div class="slist">${it.map(({k,o})=>{
+  if(k==='s')return `<div class="sr"><span class="tm">${o.start?hm(o.start)+'–'+hm(o.end):'补记'}</span><span class="tt"><i class="cd" style="background:${catColor(o.cat)}"></i><span>${esc(o.title)}${o.course?` <span class="mt">· ${esc(o.course)}</span>`:''}</span></span><span class="mn">${o.minutes} 分<button class="eb" data-edit-s="${o.id}" aria-label="编辑这段记录">编辑</button></span>${o.note?`<span class="nt">${esc(o.note)}</span>`:''}</div>`;
+  if(k==='n')return `<div class="sr note"><span class="tm">${o.at?hm(o.at):''} 反思</span><span class="tt"><span>${esc(o.text)}${o.taskId&&task(o.taskId)?` <span class="mt">· ${esc(task(o.taskId).title)}</span>`:''}${o.course?` <span class="mt">· ${esc(o.course)}</span>`:''}</span></span><span class="mn"><button class="eb" data-edit-n="${o.id}" aria-label="编辑反思">编辑</button></span></div>`;
+  return `<div class="sr"><span class="tm">${hm(o.doneAt)} 完成</span><span class="tt"><span style="color:var(--ok)">✓</span><span>${esc(o.title)}</span></span><span class="mn"></span></div>`;}).join('')}</div>`;}
+
+/* ================= 回看 ================= */
+function vReview(){
+ const u=S.ui;u.rv=u.rv||'day';u.rvDate=u.rvDate||today();u.rvWeek=u.rvWeek||weekStart(today());u.rvF=u.rvF||'all';
+ let from,to,label,nav='';
+ if(u.rv==='day'){from=to=u.rvDate;label=dayLabel(u.rvDate);nav=`<button class="btn sm" data-rv-step="-1" aria-label="前一天">‹</button><strong class="num">${label}</strong><button class="btn sm" data-rv-step="1" aria-label="后一天" ${u.rvDate>=today()?'disabled':''}>›</button>${u.rvDate!==today()?'<button class="btn sm" data-rv-step="0">回到今天</button>':''}`;}
+ else if(u.rv==='week'){from=u.rvWeek;to=addDays(from,6);const w=tWeek(from);label=(w>=1&&w<=20?'第 '+w+' 教学周 · ':'')+md(from)+'–'+md(to);nav=`<button class="btn sm" data-rv-step="-7" aria-label="上一周">‹</button><strong class="num">${label}</strong><button class="btn sm" data-rv-step="7" aria-label="下一周" ${to>=today()?'disabled':''}>›</button>`;}
+ else{to=today();from=addDays(to,-29);label='近 30 天';nav=`<strong>${md(from)}–${md(to)}</strong>`;}
+ const days=[];for(let d=from;d<=to;d=addDays(d,1))days.push(d);
+ const ss=S.sessions.filter(s=>s.date>=from&&s.date<=to),total=ss.reduce((a,s)=>a+s.minutes,0);
+ const notes=S.notes.filter(n=>n.date>=from&&n.date<=to),doneN=S.tasks.filter(t=>t.done&&t.doneAt&&dateOfMs(t.doneAt)>=from&&dateOfMs(t.doneAt)<=to).length;
+ const active=days.filter(d=>d<=today()&&dayMin(d)>0).length;
+ const byCat={};for(const s of ss)byCat[s.cat]=(byCat[s.cat]||0)+s.minutes;
+ const byTitle={};for(const s of ss){const k=s.title.trim();byTitle[k]=(byTitle[k]||0)+s.minutes;}
+ const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]),tops=Object.entries(byTitle).sort((a,b)=>b[1]-a[1]).slice(0,8);
+ const hb=(arr,col)=>arr.length?`<div class="hbar">${arr.map(([k,v])=>`<span style="min-width:0;overflow-wrap:anywhere">${col?`<i class="cd" style="background:${catColor(k)}"></i> `+catLabel(k):esc(k)}</span><span class="num sub">${fmtMin(v)}</span><span class="tr"><i style="width:${(v/arr[0][1]*100).toFixed(1)}%;background:${col?catColor(k):'var(--accent)'}"></i></span>`).join('')}</div>`:'<p class="empty" style="padding:6px 0">还没有记录</p>';
+ const multi=u.rv!=='day';
+ return `<div class="page">${banner()}<div class="ph"><div><h1>回看</h1><p>这段时间做了什么，时间花在了哪里。</p></div><div class="seg" role="group" aria-label="范围">${[['day','日'],['week','周'],['30','30 天']].map(([k,l])=>`<button data-rv="${k}" class="${u.rv===k?'on':''}" aria-pressed="${u.rv===k}">${l}</button>`).join('')}</div></div>
+ <div class="row">${nav}</div>
+ <section class="card"><div class="stats"><div><strong class="num">${fmtMin(total)}</strong><small>投入时间</small></div><div><strong class="num">${ss.length}</strong><small>段记录</small></div>${multi?`<div><strong class="num">${active}</strong><small>有记录的天</small></div><div><strong class="num">${fmtMin(active?total/active:0)}</strong><small>有记录日平均</small></div>`:''}<div><strong class="num">${doneN}</strong><small>完成任务</small></div><div><strong class="num">${notes.length}</strong><small>条反思</small></div></div>
+ ${multi?barChart(days):dayStrip(from)}</section>
+ ${u.rv==='30'?`<section class="card"><h2>每日投入</h2>${heat(days)}<p class="note-s" style="margin-top:8px">颜色越深投入越多：≤15、≤30、≤60、>60 分钟。点某一天查看当天记录。</p></section>`:''}
+ <div class="two"><section class="card"><h2>分类</h2>${hb(cats,true)}</section><section class="card"><h2>做得最多的事</h2><p class="note-s">按记录名称合并</p>${hb(tops,false)}</section></div>
+ <section class="card"><div class="ph" style="align-items:center"><h2>${multi?'逐日记录':'当天记录'}</h2><div class="row"><div class="seg" role="group" aria-label="筛选">${[['all','全部'],['time','时间'],['note','反思']].map(([k,l])=>`<button data-rvf="${k}" class="${u.rvF===k?'on':''}">${l}</button>`).join('')}</div><button class="btn sm" data-act="md">复制为 Markdown</button>${!multi?`<button class="btn sm" data-act="add-session" data-date="${from}">＋ 补记</button>`:''}</div></div>
+ ${multi?days.slice().reverse().filter(d=>d<=today()).map((d,i)=>{const n=dayItems(d,u.rvF).length;return `<details class="day" ${i<2&&n?'open':''}><summary><b>${dayLabel(d)}</b><span class="sub num">${fmtMin(dayMin(d))} · ${n} 条</span></summary>${dayList(d,false,u.rvF)}</details>`;}).join(''):dayList(from,false,u.rvF)}</section></div>`;}
+function barChart(days){
+ const vals=days.map(d=>d>today()?null:dayMin(d)),max=Math.max(60,...vals.filter(v=>v!=null));
+ const step=max<=120?30:max<=300?60:120,top=Math.ceil(max/step)*step,W=720,H=170,L=40,B=24,T=10,bw=(W-L-6)/days.length;
+ const y=v=>T+(H-T-B)*(1-v/top);let g='';for(let v=0;v<=top;v+=step)g+=`<line class="gl" x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${v>=60?(v/60)+'h':v+'′'}</text>`;
+ const every=days.length>14?5:1;
+ const bars=days.map((d,i)=>{const v=vals[i];const x=L+i*bw+bw*.18,w=bw*.64;return (v==null?'':`<rect class="bar ${v===0?'z':''} ${d===today()?'t':''}" x="${x}" y="${v===0?y(0)-2:y(v)}" width="${w}" height="${v===0?2:y(0)-y(v)}" rx="2"><title>${md(d)} ${fmtMin(v)}</title></rect>`)+((i%every===0||i===days.length-1)?`<text x="${x+w/2}" y="${H-6}" text-anchor="middle">${days.length<=7?'周'+WD[dow(d)]:md(d)}</text>`:'');}).join('');
+ return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="每日投入柱状图">${g}${bars}</svg>`;}
+function heat(days){const first=days[0],lead=dow(first);let h=WD.map(w=>`<span class="hd">${w}</span>`).join('');for(let i=0;i<lead;i++)h+='<button class="nil" tabindex="-1" aria-hidden="true"></button>';
+ for(const d of days){const m=dayMin(d),l=m===0?'':m<=15?'l1':m<=30?'l2':m<=60?'l3':'l4';h+=`<button class="${l} num" data-rv-day="${d}" title="${md(d)} · ${fmtMin(m)}">${Number(d.slice(8))}</button>`;}return `<div class="heat">${h}</div>`;}
+function mdText(){const u=S.ui;let from,to;if(u.rv==='day'){from=to=u.rvDate;}else if(u.rv==='week'){from=u.rvWeek;to=addDays(from,6);}else{to=today();from=addDays(to,-29);}
+ let out=`# T计划记录 ${from}${to!==from?' ~ '+to:''}\n`;for(let d=from;d<=to&&d<=today();d=addDays(d,1)){const it=dayItems(d);if(!it.length)continue;out+=`\n## ${d} 周${WD[dow(d)]} · ${fmtMin(dayMin(d))}\n`;for(const {k,o} of it){if(k==='s')out+=`- ${o.start?hm(o.start)+'–'+hm(o.end):'补记'} ${o.title}（${o.minutes} 分钟，${catLabel(o.cat)}）${o.note?'：'+o.note:''}\n`;else if(k==='n')out+=`- 反思：${o.text.replace(/\n/g,' ')}\n`;else out+=`- ✓ 完成：${o.title}\n`;}}return out;}
+
+/* ================= 本周 ================= */
+function vWeek(){
+ const u=S.ui;u.wk=u.wk||weekStart(today());const mon=u.wk,cap=S.settings.cap,t=today(),w=tWeek(mon);
+ let plan=0,act=0,n=0,dn=0;
+ const cols=WD.map((wd,i)=>{const d=addDays(mon,i),L=S.tasks.filter(x=>x.date===d),sum=L.reduce((a,x)=>a+x.est,0),am=dayMin(d),cs=coursesOn(d).length;plan+=sum;act+=am;n+=L.length;dn+=L.filter(x=>x.done).length;
+  return `<div class="wcol ${d===t?'td':''}" data-d="${d}"><div class="wh"><b>周${wd}</b><small class="num">${md(d)}</small></div><div class="ld" title="计划 ${sum} / 上限 ${cap} 分钟"><i class="${sum>cap?'ov':''}" style="width:${Math.min(100,sum/cap*100)}%"></i></div><div class="wmeta num"><span>计划 ${sum}′${sum>cap?' · 超出':''}</span><span>${d<=t?'实际 '+am+'′':''}</span></div>${cs?`<div class="wmeta"><button class="linkbtn" style="padding:0;font-size:11.5px" data-go="schedule">${cs} 节课</button></div>`:''}`
+  +L.map(x=>`<button class="wc ${x.done?'done':''}" draggable="true" data-w="${x.id}" style="border-left-color:${catColor(x.cat)}"><span>${x.check?'◇ ':''}${esc(x.title)}</span><small class="num">${x.est} 分钟${S.main[d]===x.id?' · 主任务':''}${taskMin(x.id)?' · 已投入 '+taskMin(x.id)+'′':''}</small></button>`).join('')
+  +(u.wkAdd===d?`<input class="in" id="wkIn" data-d="${d}" placeholder="任务名 45分钟，回车添加" aria-label="添加到周${wd}">`:`<button class="wadd" data-wkadd="${d}">＋ 添加</button>`)+`</div>`;}).join('');
+ return `<div class="page wide">${banner()}<div class="ph"><div><h1>本周安排</h1><p>按天排布，可以拖动卡片换天。点卡片看详情。</p></div><div class="row"><button class="btn sm" data-wk-step="-7" aria-label="上一周">‹</button><strong class="num">${w>=1&&w<=20?'第 '+w+' 教学周 · ':''}${md(mon)}–${md(addDays(mon,6))}</strong><button class="btn sm" data-wk-step="7" aria-label="下一周">›</button>${mon!==weekStart(t)?'<button class="btn sm" data-wk-step="0">回到本周</button>':''}</div></div>
+ <p class="sub num">${n} 个任务 · 计划 ${fmtMin(plan)} · 实际投入 ${fmtMin(act)} · 已完成 ${dn}。每天计划上限 ${cap} 分钟，可在“数据与设置”里改。想排先后顺序和分支？<button class="linkbtn" style="display:inline;padding:0;color:var(--accent-ink)" data-go="tree">试试决策树</button></p>
+ <div class="wk">${cols}</div></div>`;}
+
+/* ================= 决策树 ================= */
+const N=(title,min,day,kind='step',kids=[],cond='')=>({id:uid('n'),kind,title,min,day,cond,kids});
+function templateTree(kind,goal){
+ let root;
+ if(kind==='math')root=N(goal,0,0,'goal',[N('极限 10 题摸底',20,0,'step',[N('正确率怎么样？',0,0,'check',[
+  N('夹逼与洛必达综合题',40,1,'step',[N('限时套卷',45,2)],'≥ 80%'),
+  N('等价无穷小与泰勒补漏',50,1,'step',[N('错题重做',30,2,'step',[N('复测 10 题',20,3)])],'50–80%'),
+  N('回看极限定义与性质',60,1,'step',[N('例题精讲',45,2,'step',[N('复测 10 题',20,3)])],'< 50%')])])]);
+ else if(kind==='course')root=N(goal,0,0,'goal',[N('读教材 / 看课件',30,0,'step',[N('合上书讲一遍',15,0,'step',[N('能讲清楚吗？',0,0,'check',[
+  N('做基础题',40,1,'step',[N('错题整理',20,1)],'能'),
+  N('回看例题和推导',30,1,'step',[N('再讲一遍',15,1,'step',[N('做基础题',40,2)])],'讲不清')])])])]);
+ else if(kind==='lab')root=N(goal,0,0,'goal',[N('整理原始数据',30,0,'step',[N('画图表',30,0,'step',[N('数据合理吗？',0,0,'check',[
+  N('写结果分析',40,1,'step',[N('检查格式和引用',15,1)],'合理'),
+  N('找误差来源',30,1,'step',[N('问同学或老师',15,1,'step',[N('写结果分析',40,2)])],'不合理')])])])]);
+ else root=N(goal,0,0,'goal',[N('第一步',30,0)]);
+ return {id:uid('tr'),goal,createdAt:Date.now(),start:today(),root,added:{},chosen:{},pick:{}};}
+const guessTpl=g=>/数学|极限|导数|积分|高数|线代|概率/.test(g)?'math':/实验|报告|数据/.test(g)?'lab':/课|章|复习|教材|课件/.test(g)?'course':'blank';
+function walk(n,f,p=null){f(n,p);n.kids.forEach(k=>walk(k,f,n));}
+function findNode(tr,id){let r=null,pp=null;walk(tr.root,(n,p)=>{if(n.id===id){r=n;pp=p;}});return [r,pp];}
+function curTree(){const u=S.ui;let tr=S.trees.find(t=>t.id===u.tree);if(!tr&&S.trees.length){tr=S.trees[S.trees.length-1];u.tree=tr.id;}return tr;}
+function pathNodes(tr){const out=[];let n=tr.root.kids[0];while(n){out.push(n);if(n.kind==='check'){const i=tr.chosen[n.id]??tr.pick[n.id]??0;n=n.kids[i];}else n=n.kids[0];}return out;}
+function vTree(){
+ const u=S.ui,tr=curTree(),showNew=u.treeNew||!tr;
+ const newPanel=`<section class="card"><h2>新目标</h2><div class="form" style="margin-top:10px"><label class="f">目标<input class="in" id="tgGoal" maxlength="150" value="${esc(u.treeGoal||'')}" placeholder="例如：3 天内搞定考研数学极限专题"></label>
+  <div class="grid2"><label class="f">起点模板<select class="in" id="tgTpl"><option value="auto">按目标自动选择</option><option value="math">刷题专题（摸底 → 按正确率分支）</option><option value="course">课程章节（讲一遍 → 能否讲清）</option><option value="lab">实验报告（数据 → 是否合理）</option><option value="blank">空白</option></select></label></div>
+  <div class="row"><button class="btn pri" data-act="tg-make">生成本地模板</button><button class="btn" data-enh="tree-ai">AI 提议</button>${tr?'<button class="btn" data-act="tg-cancel">取消</button>':''}</div>
+  <p class="note-s">本地模板可逐个改节点；AI 提议会先展示完整草稿，确认后加入决策树，再由你选择要加入安排的路径。</p></div></section>`;
+ const chips=`<div class="trees">${S.trees.map(t=>`<button class="chip ${tr&&t.id===tr.id&&!showNew?'hit':''}" data-tree="${t.id}">${esc(t.goal)}</button>`).join('')}<button class="chip" data-act="tg-new">＋ 新目标</button></div>`;
+ if(showNew)return `<div class="page wide">${banner()}<div class="ph"><div><h1>决策树</h1><p>把目标拆成步骤，在关键处设检查点。到检查点时由你判断结果，再走对应的分支。</p></div></div>${S.trees.length?chips:''}${newPanel}</div>`;
+ const path=pathNodes(tr),pathMin=path.reduce((a,n)=>a+n.min,0),added=Object.keys(tr.added).length;
+ const checks=[];walk(tr.root,n=>{if(n.kind==='check')checks.push(n);});
+ const firstChecks=checks.filter(c=>path.includes(c));
+ const nextCheck=path.find(n=>n.kind==='check'&&!(n.id in tr.chosen));
+ const canAdd=path.some(n=>!tr.added[n.id]&&!(nextCheck&&path.indexOf(n)>path.indexOf(nextCheck)));
+ return `<div class="page wide">${banner()}<div class="ph"><div><h1>决策树</h1><p>把目标拆成步骤，在关键处设检查点。到检查点时由你判断结果，再走对应的分支。</p></div></div>${chips}
+ <div class="tbar">${firstChecks.map(c=>`<span class="sub">${esc(c.title)}</span>${c.kids.map((k,i)=>`<button class="chip ${(tr.chosen[c.id]??tr.pick[c.id]??0)===i?'hit':''}" data-pick-br="${c.id}|${i}" ${c.id in tr.chosen?'disabled':''}>${esc(k.cond||'分支 '+(i+1))}</button>`).join('')}`).join('<span class="mt">·</span>')}<span class="sub num">所选路径 ${fmtMin(pathMin)}</span></div>
+ <div class="tlay"><div class="tw" id="tw"><div class="tcan" id="tcan"></div></div><aside class="card ted" id="ted">${treeEditor(tr)}</aside></div>
+ <section class="card"><div class="tbar"><label class="f" style="flex-direction:row;align-items:center;gap:8px">第 1 天是<input class="in" type="date" id="tgStart" value="${tr.start}" style="width:auto"></label>
+ <button class="btn pri" data-act="tg-add" ${canAdd?'':'disabled'}>${!canAdd?'这条路径已全部加入':(added?'加入下一段':'加入安排')+'（到'+(nextCheck?'检查点「'+esc(nextCheck.title)+'」':'终点')+'）'}</button>
+ <span class="sub">${added?`已加入 ${added} 个任务。`:''}${nextCheck&&tr.added[nextCheck.id]?'完成检查点任务时会问你结果，再加入对应分支。':'只加入到第一个检查点为止，后面的分支等你判断后再加。'}</span><span class="grow"></span><span id="tgDel"><button class="btn sm danger" data-act="tg-del">删除这棵树</button></span></div></section></div>`;}
+function treeEditor(tr){
+ const id=S.ui.tnode;const [n,p]=id?findNode(tr,id):[null,null];
+ if(!n)return `<h3 style="font-size:16px">编辑节点</h3><p class="sub">点左边的任意节点来修改。虚线框是检查点，有两个以上的分支。</p><dl class="kv" style="margin-top:6px"><dt>步骤</dt><dd>做一件具体的事，带预计时长和第几天</dd><dt>检查点</dt><dd>到这里由你判断结果，再选分支</dd></dl>`;
+ if(n.kind==='goal')return `<h3 style="font-size:16px">目标</h3><label class="f">目标名称<input class="in" id="tnTitle" value="${esc(n.title)}" maxlength="150"></label>${n.kids.length?'':'<button class="btn" data-tn="first">＋ 第一步</button>'}`;
+ return `<h3 style="font-size:16px">${n.kind==='check'?'检查点':'步骤'}</h3>
+ <label class="f">${n.kind==='check'?'要判断的问题':'做什么'}<input class="in" id="tnTitle" value="${esc(n.title)}" maxlength="150"></label>
+ ${p&&p.kind==='check'?`<label class="f">进入这一支的条件<input class="in" id="tnCond" value="${esc(n.cond)}" maxlength="40" placeholder="例如：≥ 80%"></label>`:''}
+ <div class="grid2 tedrow2">${n.kind==='step'?`<label class="f">预计分钟<input class="in" id="tnMin" type="number" min="1" max="600" value="${n.min}"></label>`:''}<label class="f">第几天<input class="in" id="tnDay" type="number" min="1" max="60" value="${n.day+1}"></label></div>
+ <label class="f">类型<select class="in" id="tnKind"><option value="step" ${n.kind==='step'?'selected':''}>步骤</option><option value="check" ${n.kind==='check'?'selected':''}>检查点</option></select></label>
+ <div class="row">${n.kind==='step'?`<button class="btn sm" data-tn="next">${n.kids.length?'＋ 插入下一步':'＋ 下一步'}</button>`:`<button class="btn sm" data-tn="branch">＋ 分支</button>`}<button class="btn sm danger" data-tn="del">删除（含后续）</button></div>
+ ${tr.added[n.id]?`<p class="note-s">这个节点已加入安排，修改不会改动已生成的任务。</p>`:''}`;}
+function drawTree(){
+ const tr=curTree(),can=$('#tcan');if(!tr||!can)return;
+ const W=176,CW=212,RH=86,PAD=16;let row=0;const pos={};
+ (function lay(n,d){if(!n.kids.length){pos[n.id]={x:d,y:row++};return;}n.kids.forEach(k=>lay(k,d+1));pos[n.id]={x:d,y:(pos[n.kids[0].id].y+pos[n.kids[n.kids.length-1].id].y)/2};})(tr.root,0);
+ const path=new Set([tr.root.id,...pathNodes(tr).map(n=>n.id)]),sel=S.ui.tnode;
+ let maxX=0,maxY=0,html='',edges='';
+ walk(tr.root,(n,p)=>{const P=pos[n.id],x=PAD+P.x*CW,y=PAD+P.y*RH;maxX=Math.max(maxX,x+W);maxY=Math.max(maxY,y+70);
+  const tk=tr.added[n.id]&&task(tr.added[n.id]);
+  const meta=n.kind==='goal'?`目标 · 所选路径 ${fmtMin(pathNodes(tr).reduce((a,x)=>a+x.min,0))}`:n.kind==='check'?`检查点 · 第 ${n.day+1} 天`:`${n.min} 分钟 · 第 ${n.day+1} 天`;
+  html+=`<button class="tn ${n.kind} ${sel===n.id?'sel':''} ${path.has(n.id)?'':'dim'}" style="left:${x}px;top:${y}px" data-tnode="${n.id}">${p&&p.kind==='check'?`<span class="cond">${esc(n.cond||'分支')}</span>`:''}<b>${n.kind==='check'?'◇ ':''}${esc(n.title)}</b><small class="num">${meta}</small>${tk?`<span class="st">${tk.done?'✓ 已完成':'已加入安排'}</span>`:''}</button>`;
+  if(p){const a=pos[p.id],x1=PAD+a.x*CW+W,y1=PAD+a.y*RH+30,x2=x,y2=y+30,on=path.has(n.id)&&path.has(p.id);edges+=`<path d="M${x1} ${y1}C${x1+24} ${y1},${x2-24} ${y2},${x2} ${y2}" fill="none" stroke="${on?'var(--accent)':'var(--line)'}" stroke-width="${on?2:1.5}"/>`;}});
+ can.style.width=(maxX+PAD)+'px';can.style.height=(maxY+PAD)+'px';
+ can.innerHTML=`<svg width="${maxX+PAD}" height="${maxY+PAD}" aria-hidden="true">${edges}</svg>`+html;}
+function treeAdd(tr){const path=pathNodes(tr);let made=0;
+ for(const n of path){if(!tr.added[n.id]){const date=addDays(tr.start,n.day)<today()?today():addDays(tr.start,n.day);const t=newTask({title:n.kind==='check'?'检查点：'+n.title:n.title,est:n.kind==='check'?10:n.min,date,cat:catOf(tr.goal+n.title),tree:{id:tr.id,node:n.id},check:n.kind==='check'});S.tasks.push(t);tr.added[n.id]=t.id;made++;}
+  if(n.kind==='check'&&!(n.id in tr.chosen))break;}
+ save();toast(made?`已加入 ${made} 个任务到安排`:'没有新的步骤可以加入');render();}
+function branchDialog(t){const tr=S.trees.find(x=>x.id===t.tree?.id);if(!tr)return;const [n]=findNode(tr,t.tree.node);if(!n||n.kind!=='check'||n.id in tr.chosen)return;
+ openDlg(`<h2>检查点：${esc(n.title)}</h2><p class="sub">结果是哪一种？选好后，会把这一支接下来的步骤加入安排（到下一个检查点为止）。</p><div class="row" style="margin-top:12px">${n.kids.map((k,i)=>`<button class="btn ${i===0?'pri':''}" data-branch="${tr.id}|${n.id}|${i}">${esc(k.cond||'分支 '+(i+1))} → ${esc(k.title)}</button>`).join('')}</div><div class="dlgfoot"><button class="btn" data-act="dlg-close">稍后再选</button></div>`);}
+function treeInput(e){const tr=curTree();if(!tr)return;const [n]=findNode(tr,S.ui.tnode);if(!n)return;const v=e.target.value;
+ if(e.target.id==='tnTitle')n.title=v.trim()||n.title;if(e.target.id==='tnCond')n.cond=v.trim();if(e.target.id==='tnMin')n.min=Math.max(1,Math.min(600,Math.round(+v)||1));if(e.target.id==='tnDay')n.day=Math.max(0,Math.min(59,(Math.round(+v)||1)-1));
+ if(e.target.id==='tnKind'){n.kind=v;if(v==='check'){n.min=0;if(n.kids.length<2){while(n.kids.length<2)n.kids.push(N('新的分支步骤',30,n.day+1,'step',[],n.kids.length?'否':'是'));n.kids.forEach((k,i)=>{if(!k.cond)k.cond=i?'否':'是';});}}else{n.min=n.min||30;n.kids=n.kids.slice(0,1);}save();render();return;}
+ if(n.kind==='goal')tr.goal=n.title;save();drawTree();}
+
+/* ================= 课表 ================= */
+function vSchedule(){const u=S.ui;u.sw=u.sw||Math.max(1,Math.min(20,tWeek(today())));const w=u.sw,mon=addDays(SEM,(w-1)*7),t=today(),rows=SCHED.weeks[w]||[];
+ const head=WD.map((x,i)=>{const d=addDays(mon,i),a=SCHED.ann[d];return `<th class="${d===t?'tdc':''}">周${x}<small class="num">${md(d)}</small>${a?`<span class="ann" title="${esc(a[2])}">${esc(a[1])}</span>`:''}</th>`;}).join('');
+ const body=[1,2,3,4,5].map(s=>`<tr><td class="num">${slotText(s)}</td>${WD.map((_,i)=>{const d=addDays(mon,i);return `<td class="${d===t?'tdc':''}">${rows.filter(c=>c[0]===i+1&&c[1]===s).map(c=>`<button class="cell ${/实验/.test(c[2])?'lab':''}" data-course="${d}|${s}|${c[8]}">${esc(c[2])}<small>${esc(c[3])}</small>${c[6]?`<span class="ann">${esc(c[6])}</span>`:''}</button>`).join('')}</td>`;}).join('')}</tr>`).join('');
+ return `<div class="page wide"><div class="ph"><div><h1>课表</h1><p>${esc(SCHED.profile.name)} · ${esc(SCHED.profile.className)} · 2026—2027 学年第一学期。点课程可以直接开始计时或写反思。</p></div><div class="row"><button class="btn sm" data-sw="-1" ${w<=1?'disabled':''} aria-label="上一周">‹</button><strong class="num">第 ${w} 周 · ${md(mon)}–${md(addDays(mon,6))}</strong><button class="btn sm" data-sw="1" ${w>=20?'disabled':''} aria-label="下一周">›</button>${w!==tWeek(t)&&tWeek(t)>=1&&tWeek(t)<=20?'<button class="btn sm" data-sw="0">回到本周</button>':''}</div></div>
+ <div class="tsc"><table class="tt"><thead><tr><th>节次</th>${head}</tr></thead><tbody>${body}</tbody></table></div>
+ ${SCHED.pending.map(p=>`<div class="banner"><b>待确认</b><span>${esc(p)}</span></div>`).join('')}<p class="note-s">课表是只读的，来自旧版核对过的课程数据；临时调课以学校通知为准。</p></div>`;}
+function courseDialog(key){const [d,slot,id]=key.split('|');const w=tWeek(d),c=(SCHED.weeks[w]||[]).find(x=>x[8]===id&&x[1]===+slot);if(!c)return;const name=cName(c);
+ const ns=S.notes.filter(n=>n.course===name).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6),ss=S.sessions.filter(s=>s.course===name),mins=ss.reduce((a,s)=>a+s.minutes,0);
+ const legacy=(S.archive?.raw?.courseLearningPlans||[]).filter(p=>p.courseId===id).sort((a,b)=>b.date.localeCompare(a.date));
+ openDlg(`<h2>${esc(c[2])}</h2><dl class="kv"><dt>时间</dt><dd class="num">${dayLabel(d)} · 第 ${w} 周 · ${slotText(+slot)}</dd><dt>地点</dt><dd>${esc(c[3])}</dd><dt>老师</dt><dd>${esc(c[4])}</dd>${c[7]?`<dt>说明</dt><dd>${esc(c[7])}</dd>`:''}${SCHED.ann[d]?`<dt>日历</dt><dd>${esc(SCHED.ann[d][1])}：${esc(SCHED.ann[d][2])}</dd>`:''}<dt>已投入</dt><dd class="num">${fmtMin(mins)}（关联这门课的时间记录）</dd></dl>
+ <div class="row" style="margin-top:14px"><button class="btn acc" data-act="c-timer" data-name="${esc(name)}">${svg('play')}为这门课计时</button><button class="btn" data-act="c-note" data-name="${esc(name)}">${svg('pen')}写反思</button></div>
+ ${ns.length?`<h3 style="font-size:15px;margin-top:16px">这门课的反思</h3><div class="slist">${ns.map(n=>`<div class="sr note"><span class="tm">${md(n.date)}</span><span class="tt"><span>${esc(n.text)}</span></span><span></span></div>`).join('')}</div>`:''}
+ ${legacy.length?`<h3 style="font-size:15px;margin-top:16px">旧版课程记录（只读）</h3><div class="slist">${legacy.map(p=>`<div class="sr note"><span class="tm">${md(p.date)}</span><span class="tt"><span>${esc([p.topic&&'主题：'+p.topic,p.reflection&&'学会：'+p.reflection,p.unresolvedProblem&&'卡点：'+p.unresolvedProblem].filter(Boolean).join('；')||'只有计划，未记录成果')}</span></span><span></span></div>`).join('')}</div>`:''}
+ <div class="dlgfoot"><button class="btn" data-act="dlg-close">关闭</button></div>`);}
+
+/* ================= 对话框：任务详情、记录编辑 ================= */
+const dlg=$('#dlg');
+function openDlg(html){$('#dlgc').innerHTML=html;if(!dlg.open)dlg.showModal();}
+function closeDlg(){if(dlg.open)dlg.close();}
+function taskDialog(id){const t=task(id);if(!t)return;const ss=S.sessions.filter(s=>s.taskId===id).sort((a,b)=>(b.start||0)-(a.start||0)),ns=S.notes.filter(n=>n.taskId===id),tr=t.tree&&S.trees.find(x=>x.id===t.tree.id),isT=t.date===today();
+ openDlg(`<label class="f" style="margin-bottom:10px">任务<input class="in" id="tdTitle" data-tid="${id}" value="${esc(t.title)}" maxlength="150" style="font:500 18px var(--serif)"></label>
+ <div class="grid2"><label class="f">日期<input class="in" type="date" id="tdDate" data-tid="${id}" value="${t.date||''}"></label><label class="f">预计分钟<input class="in" type="number" id="tdEst" data-tid="${id}" min="0" max="1440" value="${t.est}"></label><label class="f">分类<select class="in" id="tdCat" data-tid="${id}">${CHOICES.concat(CHOICES.includes(t.cat)?[]:[t.cat]).map(c=>`<option value="${c}" ${t.cat===c?'selected':''}>${catLabel(c)}</option>`).join('')}</select></label></div>
+ <div class="row" style="margin-top:10px"><label class="check"><input type="checkbox" id="tdPin" data-tid="${id}" ${t.pin?'checked':''}>置顶</label>${isT?`<label class="check"><input type="checkbox" id="tdMain" data-tid="${id}" ${S.main[today()]===id?'checked':''}>今日主任务</label>`:''}</div>
+ <p class="sub num" style="margin:12px 0 0">已投入 ${fmtMin(taskMin(id))} · ${ss.length} 段记录${t.done&&t.doneAt?' · '+dayLabel(dateOfMs(t.doneAt))+' 完成':''}${tr?` · 来自决策树「${esc(tr.goal)}」`:''}${t.check?' · 这是一个检查点':''}</p>
+ <div class="row" style="margin-top:12px" id="tdActs"><button class="btn acc" data-act="td-timer" data-id="${id}">${svg('play')}开始计时</button><button class="btn" data-act="td-done" data-id="${id}">${t.done?'取消完成':'✓ 标记完成'}</button><button class="btn" data-act="td-note" data-id="${id}">写反思</button>${!t.done?`<button class="btn" data-act="td-tmr" data-id="${id}">推到明天</button>`:''}<button class="btn danger" data-act="td-del" data-id="${id}">删除</button></div>
+ ${ss.length||ns.length?`<div class="slist" style="margin-top:12px">${ss.slice(0,8).map(s=>`<div class="sr"><span class="tm">${md(s.date)} ${s.start?hm(s.start):''}</span><span class="tt"><span>${esc(s.note||s.title)}</span></span><span class="mn">${s.minutes} 分</span></div>`).join('')}${ns.slice(0,5).map(n=>`<div class="sr note"><span class="tm">${md(n.date)} 反思</span><span class="tt"><span>${esc(n.text)}</span></span><span></span></div>`).join('')}</div>`:''}
+ <div class="dlgfoot"><span class="note-s" style="margin-right:auto">修改会自动保存</span><button class="btn" data-act="dlg-close">关闭</button></div>`);}
+function sessionDialog(id,date){const s=id?S.sessions.find(x=>x.id===id):null;const d=s?s.date:date||today();
+ const open=S.tasks.filter(x=>!x.done||x.id===s?.taskId).slice(-60);
+ openDlg(`<h2>${s?'编辑时间记录':'补记一段时间'}</h2><div class="form">
+ <label class="f">做了什么<input class="in" id="seTitle" maxlength="150" value="${esc(s?.title||'')}" placeholder="例如：复习传感器第三章"></label>
+ <div class="grid2"><label class="f">日期<input class="in" type="date" id="seDate" value="${d}"></label><label class="f">开始时刻（可选）<input class="in" type="time" id="seStart" value="${s?.start?hm(s.start):''}"></label><label class="f">用时（分钟）<input class="in" type="number" id="seMin" min="1" max="1440" value="${s?.minutes||30}"></label></div>
+ <div class="grid2"><label class="f">分类<select class="in" id="seCat">${CHOICES.concat(s&&!CHOICES.includes(s.cat)?[s.cat]:[]).map(c=>`<option value="${c}" ${(s?.cat||'school')===c?'selected':''}>${catLabel(c)}</option>`).join('')}</select></label><label class="f">关联任务<select class="in" id="seTask"><option value="">不关联</option>${open.map(t=>`<option value="${t.id}" ${s?.taskId===t.id?'selected':''}>${esc(t.title)}</option>`).join('')}</select></label></div>
+ <label class="f">备注（可选）<input class="in" id="seNote" maxlength="300" value="${esc(s?.note||'')}"></label>
+ ${s?.src&&s.src.startsWith('legacy')?'<p class="note-s">这条记录来自旧版数据导入。</p>':''}</div>
+ <div class="dlgfoot">${s?`<span id="seDelWrap" style="margin-right:auto"><button class="btn danger" data-act="se-del" data-id="${s.id}">删除</button></span>`:''}<button class="btn" data-act="dlg-close">取消</button><button class="btn pri" data-act="se-save" data-id="${s?.id||''}">保存</button></div>`);}
+function sessionSave(id){const title=$('#seTitle').value.trim(),date=$('#seDate').value,min=Math.round(+$('#seMin').value),st=$('#seStart').value;
+ if(!title)return toast('写一下这段时间做了什么');if(!date)return toast('请选择日期');if(!(min>=1&&min<=1440))return toast('用时请填 1—1440 分钟');
+ let start=null,end=null;if(st){const x=dt(date);x.setHours(+st.slice(0,2),+st.slice(3,5),0,0);start=x.getTime();end=start+min*60000;}
+ const taskId=$('#seTask').value||null,cat=$('#seCat').value,note=$('#seNote').value.trim();
+ if(id){const s=S.sessions.find(x=>x.id===id);const keep=s.start&&st===hm(s.start)&&s.date===date;Object.assign(s,{title,date,minutes:min,cat,taskId,note,start:keep?s.start:start,end:keep?s.start+min*60000:end});}
+ else S.sessions.push({id:uid('s'),title,taskId,cat,course:null,date,start,end,minutes:min,note,src:'manual'});
+ save();closeDlg();toast(id?'已保存修改':'已补记 '+min+' 分钟');render();}
+function noteDialog(id){const n=S.notes.find(x=>x.id===id);if(!n)return;openDlg(`<h2>编辑反思</h2><div class="form"><label class="f">日期<input class="in" type="date" id="neDate" value="${n.date}" style="max-width:180px"></label><label class="f">内容<textarea class="in" id="neText" rows="5" maxlength="4000">${esc(n.text)}</textarea></label></div><div class="dlgfoot"><span id="neDelWrap" style="margin-right:auto"><button class="btn danger" data-act="ne-del" data-id="${id}">删除</button></span><button class="btn" data-act="dlg-close">取消</button><button class="btn pri" data-act="ne-save" data-id="${id}">保存</button></div>`);}
+
+/* ================= 数据与设置 ================= */
+let pendingImport=null;
+function dataDialog(){const a=S.archive,raw=a?.raw;
+ openDlg(`<h2>数据与设置</h2>
+ <div class="dsec"><h3>现在的记录</h3><p class="sub num">任务 ${S.tasks.length} · 时间记录 ${S.sessions.length}（${fmtMin(S.sessions.reduce((x,s)=>x+s.minutes,0))}） · 反思 ${S.notes.length} · 决策树 ${S.trees.length}${S.sample?' · 当前是示例数据':''}</p>
+ <p class="note-s">记录只保存在这台设备的这个浏览器里。换电脑、清理浏览器数据之前，请先导出备份。</p>
+ <div class="row"><button class="btn pri" data-act="exp">导出备份</button><button class="btn" data-act="imp">导入备份或旧版数据</button></div><div id="impBox"></div><div id="expBox"></div></div>
+ <div class="dsec"><h3>旧版数据存档</h3>${a?`<p class="sub">已在 ${new Date(a.importedAt).toLocaleString('zh-CN')} 导入旧版数据${a.fileName?'（'+esc(a.fileName)+'）':''}。原始 JSON 整份保存在备份里，不会丢失；流程编排、健康、周总结等旧功能的数据只存档，不再显示。</p><div class="row"><button class="btn sm" data-act="exp-raw">复制原始旧版 JSON</button></div>`:'<p class="sub">还没有导入旧版（T计划 1.x，tgrowth.v1）数据。在旧版“数据管理”里导出 JSON，再点上面的“导入”。</p>'}</div>
+ <div class="dsec"><h3>每天计划上限</h3><label class="f" style="flex-direction:row;align-items:center;gap:8px">本周页的负荷条按<input class="in" type="number" id="capIn" min="30" max="1440" step="10" value="${S.settings.cap}" style="width:90px">分钟计算</label></div>
+ <div class="dsec"><h3>清空</h3><div id="clrBox"><button class="btn danger" data-act="clr">清空全部记录</button></div></div>
+ <div class="dlgfoot"><button class="btn" data-act="dlg-close">关闭</button></div>`);}
+function exportJSON(){const o=JSON.parse(JSON.stringify({...S,ui:undefined}));o.exportedAt=new Date().toISOString();return JSON.stringify(o,null,1);}
+function download(text,name){try{const u=URL.createObjectURL(new Blob([text],{type:'application/json;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500);}catch(e){}}
+function copyBox(box,text,label){box.innerHTML=`<p class="note-s">${label}</p><textarea class="in json" readonly aria-label="${label}">${esc(text)}</textarea><div class="row"><button class="btn sm" data-act="copy-json">复制</button></div>`;}
+async function copyText(text){try{await navigator.clipboard.writeText(text);toast('已复制');}catch(e){toast('复制被拦截，请在文本框里全选后复制');}}
+function readImport(file){const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);previewImport(o,file.name);}catch(e){$('#impBox').innerHTML='<p class="confirm">这个文件不是有效的 JSON，请确认选的是导出的备份文件。</p>';}};r.readAsText(file);}
+function previewImport(o,name){const box=$('#impBox');
+ if(o&&o.app==='tplan'&&Array.isArray(o.tasks)){pendingImport={kind:'new',o,name};box.innerHTML=`<div class="confirm" style="background:var(--warn-soft)">新版备份：任务 ${o.tasks.length} · 时间记录 ${(o.sessions||[]).length} · 反思 ${(o.notes||[]).length}。导入会<b>替换</b>现在的全部记录。<button class="btn sm pri" data-act="imp-go">确认替换</button><button class="btn sm" data-act="imp-cancel">取消</button></div>`;return;}
+ if(o&&typeof o.schemaVersion==='number'&&Array.isArray(o.tasks)&&Array.isArray(o.logs)){const c=convertLegacy(o);pendingImport={kind:'legacy',o,name,c};
+  box.innerHTML=`<div class="confirm" style="background:var(--warn-soft);flex-direction:column;align-items:flex-start"><span>旧版数据（schemaVersion ${o.schemaVersion}）会转换成：</span><span class="num">任务 ${c.tasks.length} · 时间记录 ${c.sessions.length}（投入记录 ${c.stat.logs}，其中 ${c.stat.merged} 条带有计时时刻；未确认的计时 ${c.stat.timers}） · 反思 ${c.notes.length}（任务备注 ${c.stat.taskNotes}，课程记录 ${c.stat.course}）${c.stat.timerNotes?'；'+c.stat.timerNotes+' 条计时卡点写进了对应时间记录的备注':''}</span><span class="num">只存档、不显示：流程编排 ${c.stat.maps} · 旁听 ${(o.attendance||[]).length} · 健康 ${(o.health||[]).length} · 周总结 ${Object.keys(o.reviews||{}).length}</span><span>${S.sample?'示例数据会先被清掉。':'会合并到现在的记录里，已经导入过的条目会跳过。'}原始文件整份存档。</span><span class="row"><button class="btn sm pri" data-act="imp-go">确认导入</button><button class="btn sm" data-act="imp-cancel">取消</button></span></div>`;return;}
+ box.innerHTML='<p class="confirm">认不出这个文件：既不是新版备份，也不是旧版 T计划导出的数据。</p>';}
+function convertLegacy(o){
+ const tasks=[],sessions=[],notes=[],stat={logs:0,merged:0,timers:0,taskNotes:0,course:0,timerNotes:0,maps:(o.taskMaps?.plans||[]).length};
+ const isoMs=v=>{const n=Date.parse(v);return isNaN(n)?null:n;};
+ const tmap={};
+ for(const t of o.tasks){const k={id:t.id,title:String(t.title||'未命名任务').slice(0,300),cat:t.category||'other',date:t.date,est:Number(t.estimatedMinutes)||0,done:t.status==='done',doneAt:t.status==='done'?isoMs(t.completedAt):null,pin:false,createdAt:isoMs(t.createdAt)||Date.now(),tree:null,check:false,legacy:{id:t.id,status:t.status}};tasks.push(k);tmap[t.id]=k;
+  const txt=[t.notes&&'备注：'+t.notes,t.evidence&&'完成证据/卡点：'+t.evidence].filter(Boolean).join('\n');if(txt){notes.push({id:'L-tn-'+t.id,date:t.date,text:txt,taskId:t.id,course:null,cat:k.cat,at:isoMs(t.completedAt)||isoMs(t.createdAt),src:'legacy-task'});stat.taskNotes++;}}
+ const logById={};
+ for(const l of o.logs){const s={id:l.id,title:l.taskId&&tmap[l.taskId]?tmap[l.taskId].title:(CAT[l.category]||'学习')+'（投入记录）',taskId:l.taskId&&tmap[l.taskId]?l.taskId:null,cat:l.category||'other',course:null,date:l.date,start:null,end:null,minutes:Math.max(1,Math.round(l.minutes)),note:l.evidence||'',src:'legacy-log'};sessions.push(s);logById[l.id]=s;stat.logs++;}
+ for(const r of (o.timerBoard?.records||[])){
+  if(r.logId&&logById[r.logId]){const s=logById[r.logId];s.start=r.startedAt;s.end=r.startedAt+s.minutes*60000;if(r.title)s.title=r.title;stat.merged++;continue;}
+  const min=Math.max(1,Math.round(r.elapsedMs/60000));const tk=r.taskId&&tmap[r.taskId];
+  sessions.push({id:r.id,title:r.title||'计时',taskId:tk?r.taskId:null,cat:tk?tk.cat:catOf(r.title||''),course:null,date:dateOfMs(r.finishedAt||r.startedAt),start:r.startedAt,end:r.startedAt+min*60000,minutes:min,note:[r.blocker&&'卡点：'+r.blocker,r.next&&'下一步：'+r.next].filter(Boolean).join('；'),src:'legacy-timer'});stat.timers++;
+  if(r.blocker){stat.timerNotes++;}}
+ for(const p of (o.courseLearningPlans||[])){const txt=[p.topic&&'主题：'+p.topic,p.reflection&&'学会：'+p.reflection,p.unresolvedProblem&&'卡点：'+p.unresolvedProblem].filter(Boolean).join('\n');if(!txt)continue;
+  notes.push({id:'L-cp-'+p.id,date:p.date,text:txt,taskId:null,course:COURSE_NAME[p.courseId]||p.courseId,cat:'school',at:null,src:'legacy-course'});stat.course++;}
+ const main={};for(const [d,id] of Object.entries(o.mainByDate||{}))if(tmap[id])main[d]=id;
+ return {tasks,sessions,notes,main,stat};}
+function applyImport(){const p=pendingImport;if(!p)return;
+ if(p.kind==='new'){S=normalize(p.o);S.sample=false;}
+ else{if(S.sample)S=empty();const has=new Set([...S.tasks,...S.sessions,...S.notes].map(x=>x.id));let n=0;
+  for(const k of ['tasks','sessions','notes'])for(const x of p.c[k])if(!has.has(x.id)){S[k].push(x);n++;}
+  for(const [d,id] of Object.entries(p.c.main))if(!S.main[d])S.main[d]=id;
+  S.archive={importedAt:Date.now(),fileName:p.name,raw:p.o};S.sample=false;toast(`已导入 ${n} 条记录，原始旧版数据已存档`);}
+ pendingImport=null;save();closeDlg();render();}
+
+/* ================= 事件 ================= */
+document.addEventListener('click',e=>{
+ const tgt=e.target;if(pop&&!pop.contains(tgt)&&!tgt.closest('#plus,#mdl'))closePop();
+ const b=tgt.closest('button,[data-id].item');if(!b)return;const d=b.dataset;
+ if(d.x){if(d.x==='agentOnce')agentOnce=false;else if(d.x==='localOnce')localOnce=false;else if(d.x==='date')EC.date=null;else if(d.x==='main')EC.main=false;else EC[d.x]=null;chips();return;}
+ if(d.ck){const t=task(d.ck);if(t){setDone(t,!t.done);if(view==='today'){initComposer.keep=$('#inp')?.value||'';}render();}return;}
+ if(d.pin){const t=task(d.pin);t.pin=!t.pin;save();renderSide();return;}
+ if(b.classList.contains('item')){taskDialog(d.id);return;}
+ if(d.go){go(d.go);return;}
+ if(d.m){setMode(d.m);return;}
+ if(d.fill!==undefined){if(view!=='today'){initComposer.keep=d.fill;mode=d.mode||'task';go('today');}else{mode=d.mode||'task';setMode(mode);$('#inp').value=d.fill;autosize();chips();}$('#inp')?.focus();return;}
+ if(d.undo!==undefined){undo(+d.undo);return;}
+ if(b.id==='plus'){e.stopPropagation();onPlus(b);return;}
+ if(b.id==='send'){send();return;}
+ if(b.id==='mdl'){e.stopPropagation();modelMenu(b);return;}
+ if(b.id==='sbClose'||b.id==='sbOpen'){toggleSide();return;}
+ if(b.id==='menuBtn'){document.body.classList.add('nav-open');return;}
+ if(d.course){courseDialog(d.course);return;}
+ if(d.pick!==undefined){const t=d.pick&&task(d.pick);draft.taskId=t?t.id:null;if(t){draft.title=t.title;draft.cat=t.cat;const est=t.est;draft.dur=[15,25,45,60].includes(est)?est:est>0&&est<=180?est:25;}else{draft.title=$('#tTitle').value;}render();return;}
+ if(d.dur){draft.title=$('#tTitle')?.value||draft.title;draft.dur=d.dur==='up'?'up':+d.dur;render();return;}
+ if(d.editS){sessionDialog(d.editS);return;}
+ if(d.editN){noteDialog(d.editN);return;}
+ if(d.rv){S.ui.rv=d.rv;render();return;}
+ if(d.rvf){S.ui.rvF=d.rvf;render();return;}
+ if(d.rvStep!==undefined){const n=+d.rvStep;if(S.ui.rv==='day')S.ui.rvDate=n===0?today():addDays(S.ui.rvDate,n);else S.ui.rvWeek=addDays(S.ui.rvWeek,n);render();return;}
+ if(d.rvDay){S.ui.rv='day';S.ui.rvDate=d.rvDay;render();return;}
+ if(d.wkStep!==undefined){const n=+d.wkStep;S.ui.wk=n===0?weekStart(today()):addDays(S.ui.wk,n);render();return;}
+ if(d.wkadd){S.ui.wkAdd=d.wkadd;render();$('#wkIn')?.focus();return;}
+ if(d.w&&b.classList.contains('wc')){taskDialog(d.w);return;}
+ if(d.sw!==undefined){const n=+d.sw;S.ui.sw=n===0?tWeek(today()):Math.max(1,Math.min(20,S.ui.sw+n));render();return;}
+ if(d.tree){S.ui.tree=d.tree;S.ui.treeNew=false;S.ui.tnode=null;render();return;}
+ if(d.tnode){S.ui.tnode=d.tnode;const tr=curTree();$('#ted').innerHTML=treeEditor(tr);drawTree();return;}
+ if(d.pickBr){const [c,i]=d.pickBr.split('|');const tr=curTree();tr.pick[c]=+i;save();render();return;}
+ if(d.tn){const tr=curTree();const [n,p]=findNode(tr,S.ui.tnode);if(!n)return;
+  if(d.tn==='first'){const k=N('第一步',30,0);n.kids.push(k);S.ui.tnode=k.id;}
+  if(d.tn==='next'){const k=N('下一步',30,n.day,'step',n.kids);n.kids=[k];S.ui.tnode=k.id;}
+  if(d.tn==='branch'){const k=N('新的分支步骤',30,n.day+1,'step',[],'分支 '+(n.kids.length+1));n.kids.push(k);S.ui.tnode=k.id;}
+  if(d.tn==='del'&&p){if(p.kind==='check'&&p.kids.length<=2){return toast('检查点至少要有两个分支；可以先把检查点改成步骤');}p.kids=p.kids.filter(x=>x!==n);S.ui.tnode=p.id;for(const k in tr.pick)if(!findNode(tr,k)[0])delete tr.pick[k];}
+  save();render();return;}
+ if(d.branch){const [tid,nid,i]=d.branch.split('|');const tr=S.trees.find(x=>x.id===tid);if(!tr)return;tr.chosen[nid]=+i;tr.pick[nid]=+i;closeDlg();treeAdd(tr);return;}
+ const act=d.act;if(!act)return;
+ switch(act){
+ case 'data':dataDialog();break;
+ case 'dlg-close':closeDlg();break;
+ case 'panel-off':S.settings.panelOff=true;save();initComposer.keep=$('#inp')?.value||'';render();break;
+ case 'panel-on':S.settings.panelOff=false;save();initComposer.keep=$('#inp')?.value||'';render();break;
+ case 'clear-sample':S=empty();save();feedItems=[];toast('示例已清空，可以开始记录了');render();break;
+ case 'to-log':setMode('log');break;
+ case 'ag-save':{const p=agentPending;if(!p)break;const pick=$$('[data-agi]').filter(c=>c.checked).map(c=>p.items[+c.dataset.agi]);const keep=EC;EC=p.ctx;const n=commitItems(pick,'agent');EC=keep;agentPending=null;$('#feed').innerHTML=feedHtml();toast(n?'已保存 '+n+' 条':'没有选中任何条目');break;}
+ case 'ag-drop':agentPending=null;$('#feed').innerHTML=feedHtml();toast('已放弃这次整理');break;
+ case 'ag-cfg-save':{agentReadForm();const a=ag();if(remoteReady())a.model='remote';save();closeDlg();chips();toast(remoteReady()?'已保存，Agent 会用 '+a.modelId:'已保存。还缺 API Key 或接口地址，暂时继续用本地规则');break;}
+ case 'ag-test':(async()=>{agentReadForm();save();const box=$('#agTest');box.innerHTML='<p class="note-s">正在测试……</p>';try{const r=await remoteItems('明天 复习模电 45分钟');box.innerHTML=`<p class="confirm" style="background:var(--ok-soft)">连接正常，模型返回了 ${r.length} 条：${esc(r.map(x=>x.title).join('、'))}</p>`;}catch(err){box.innerHTML=`<p class="confirm">连接失败：${esc(err.message)}</p>`;}})();break;
+ case 't-start':startTimer();break;
+ case 't-pause':tctl('pause');break;case 't-resume':tctl('resume');break;case 't-add5':tctl('add5');break;case 't-up':tctl('up');break;case 't-end':tctl('end');break;
+ case 't-pip':openPip();break;
+ case 'w-save':wrapSave();break;
+ case 'w-discard':$('#wConfirm').innerHTML='<div class="confirm">放弃后这一轮不会留下记录。<button class="btn sm danger" data-act="w-discard-go">放弃</button><button class="btn sm" data-act="w-discard-no">保留</button></div>';break;
+ case 'w-discard-go':S.active=null;save();toast('已放弃这一轮');render();break;
+ case 'w-discard-no':$('#wConfirm').innerHTML='';break;
+ case 'add-session':sessionDialog(null,d.date);break;
+ case 'se-save':sessionSave(d.id||null);break;
+ case 'se-del':$('#seDelWrap').innerHTML=`<span class="confirm">删掉这段记录？<button class="btn sm danger" data-act="se-del-go" data-id="${d.id}">删除</button></span>`;break;
+ case 'se-del-go':S.sessions=S.sessions.filter(x=>x.id!==d.id);save();closeDlg();toast('已删除');render();break;
+ case 'ne-save':{const n=S.notes.find(x=>x.id===d.id);const v=$('#neText').value.trim();if(!v)return toast('内容不能为空');n.text=v;n.date=$('#neDate').value||n.date;save();closeDlg();render();break;}
+ case 'ne-del':$('#neDelWrap').innerHTML=`<span class="confirm">删掉这条反思？<button class="btn sm danger" data-act="ne-del-go" data-id="${d.id}">删除</button></span>`;break;
+ case 'ne-del-go':S.notes=S.notes.filter(x=>x.id!==d.id);save();closeDlg();render();break;
+ case 'md':copyText(mdText());break;
+ case 'td-timer':{const t=task(d.id);if(S.active){toast('先结束当前这一轮');break;}draft={title:t.title,taskId:t.id,cat:t.cat,course:null,dur:[15,25,45,60].includes(t.est)?t.est:t.est>0&&t.est<=180?t.est:25};closeDlg();go('timer');break;}
+ case 'td-done':{const t=task(d.id);closeDlg();setDone(t,!t.done);toast(t.done?'已完成':'已改回未完成');render();break;}
+ case 'td-note':{const t=task(d.id);closeDlg();EC=E0();EC.taskId=t.id;mode='note';go('today');break;}
+ case 'td-tmr':{const t=task(d.id);t.date=addDays(today(),1);save();closeDlg();toast('已推到明天');render();break;}
+ case 'td-del':$('#tdActs').innerHTML=`<div class="confirm">删除这个任务？它的时间记录和反思会保留，只是不再关联任务。<button class="btn sm danger" data-act="td-del-go" data-id="${d.id}">删除</button><button class="btn sm" data-act="td-del-no" data-id="${d.id}">取消</button></div>`;break;
+ case 'td-del-no':taskDialog(d.id);break;
+ case 'td-del-go':{S.tasks=S.tasks.filter(x=>x.id!==d.id);for(const s of S.sessions)if(s.taskId===d.id)s.taskId=null;for(const n of S.notes)if(n.taskId===d.id)n.taskId=null;for(const k in S.main)if(S.main[k]===d.id)delete S.main[k];for(const tr of S.trees)for(const k in tr.added)if(tr.added[k]===d.id)delete tr.added[k];save();closeDlg();toast('已删除任务');render();break;}
+ case 'c-timer':{if(S.active){toast('先结束当前这一轮');break;}draft={title:d.name,taskId:null,cat:'school',course:d.name,dur:45};closeDlg();go('timer');break;}
+ case 'c-note':closeDlg();EC=E0();EC.course=d.name;mode='note';go('today');break;
+ case 'tg-new':S.ui.treeNew=true;S.ui.treeGoal='';render();break;
+ case 'tg-cancel':S.ui.treeNew=false;render();break;
+ case 'tg-make':{const g=$('#tgGoal').value.trim();if(!g){$('#tgGoal').focus();return toast('先写下目标');}let k=$('#tgTpl').value;if(k==='auto')k=guessTpl(g);const tr=templateTree(k,g);S.trees.push(tr);S.ui.tree=tr.id;S.ui.treeNew=false;S.ui.treeGoal='';S.ui.tnode=null;save();render();break;}
+ case 'tg-ai':(async()=>{const g=$('#tgGoal').value.trim();if(!g)return toast('先写下目标');try{const r=await window.TPlanAI.generateTree(g);const fix=n=>({id:uid('n'),kind:['step','check','goal'].includes(n.kind)?n.kind:'step',title:String(n.title||'步骤').slice(0,150),min:Math.max(0,Math.min(600,+n.min||0)),day:Math.max(0,Math.min(59,+n.day||0)),cond:String(n.cond||''),kids:(n.kids||[]).map(fix)});const tr={id:uid('tr'),goal:g,createdAt:Date.now(),start:today(),root:{...fix(r),kind:'goal',title:g},added:{},chosen:{},pick:{}};S.trees.push(tr);S.ui.tree=tr.id;S.ui.treeNew=false;save();render();toast('AI 草稿已生成，请逐个检查节点');}catch(err){toast('AI 生成失败：'+(err?.message||err));}})();break;
+ case 'tg-add':{const tr=curTree();const v=$('#tgStart').value;if(v)tr.start=v;treeAdd(tr);break;}
+ case 'tg-del':$('#tgDel').innerHTML='<span class="confirm">删除这棵树？已加入安排的任务会保留。<button class="btn sm danger" data-act="tg-del-go">删除</button></span>';break;
+ case 'tg-del-go':{const tr=curTree();S.trees=S.trees.filter(x=>x!==tr);for(const t of S.tasks)if(t.tree?.id===tr.id)t.tree=null;S.ui.tree=null;S.ui.tnode=null;save();render();break;}
+ case 'exp':{const j=exportJSON();download(j,'T计划备份_'+today()+'.json');copyBox($('#expBox'),j,'如果没有开始下载，可以复制下面的内容，保存成 .json 文件');break;}
+ case 'exp-raw':copyBox($('#expBox'),JSON.stringify(S.archive.raw,null,1),'旧版原始 JSON（可以导回旧版）');break;
+ case 'copy-json':{const ta=b.closest('div').previousElementSibling;ta.select();copyText(ta.value);break;}
+ case 'imp':$('#fileIn').value='';$('#fileIn').click();break;
+ case 'imp-go':applyImport();break;
+ case 'imp-cancel':pendingImport=null;$('#impBox').innerHTML='';break;
+ case 'clr':$('#clrBox').innerHTML='<div class="confirm">清空后所有任务、时间记录、反思和旧版存档都会删除，无法恢复。建议先导出备份。<button class="btn sm danger" data-act="clr-go">清空</button><button class="btn sm" data-act="clr-no">取消</button></div>';break;
+ case 'clr-no':$('#clrBox').innerHTML='<button class="btn danger" data-act="clr">清空全部记录</button>';break;
+ case 'clr-go':S=empty();save();closeDlg();feedItems=[];toast('已清空');render();break;
+ }
+});
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.id==='inp'){autosize();chips();return;}
+ if(t.id==='tTitle'){draft.title=t.value;return;}
+ if(t.id==='tCustom'){const n=Math.round(+t.value);if(n>=1&&n<=180){draft.dur=n;$$('.durs button').forEach(x=>x.classList.remove('on'));const c=$('#bigClock');if(c&&!S.active)c.textContent=clock(n*60000);}return;}
+ if(['tnTitle','tnCond','tnMin','tnDay'].includes(t.id)){treeInput(e);return;}
+});
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.id==='agProv'){$('#agUrlRow').hidden=t.value!=='openai';if(t.value==='openai'&&/^claude/.test($('#agModel').value))$('#agModel').value='deepseek-chat';if(t.value==='anthropic'&&!/^claude/.test($('#agModel').value))$('#agModel').value='';return;}
+ if(t.id==='tnKind'){treeInput(e);return;}
+ if(t.dataset.tid){const k=task(t.dataset.tid);if(!k)return;
+  if(t.id==='tdTitle'&&t.value.trim())k.title=t.value.trim().slice(0,150);
+  if(t.id==='tdDate'&&t.value)k.date=t.value;
+  if(t.id==='tdEst')k.est=Math.max(0,Math.min(1440,Math.round(+t.value)||0));
+  if(t.id==='tdCat')k.cat=t.value;
+  if(t.id==='tdPin')k.pin=t.checked;
+  if(t.id==='tdMain'){if(t.checked)S.main[today()]=k.id;else if(S.main[today()]===k.id)delete S.main[today()];}
+  save();renderSide();if(view!=='today')render();return;}
+ if(t.id==='capIn'){const n=Math.round(+t.value);if(n>=30&&n<=1440){S.settings.cap=n;save();if(view==='week')render();}return;}
+ if(t.id==='tgStart'){const tr=curTree();if(tr&&t.value){tr.start=t.value;save();}return;}
+ if(t.id==='fileIn'&&t.files[0]){if(!dlg.open)dataDialog();readImport(t.files[0]);}
+});
+document.addEventListener('keydown',e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='b'){e.preventDefault();toggleSide();return;}
+ if(e.key==='Escape'){closePop();document.body.classList.remove('nav-open');}
+ const t=e.target;
+ if(t.id==='inp'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&e.keyCode!==229){e.preventDefault();if(!$('#send').disabled)send();return;}
+ if(t.id==='tTitle'&&e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();startTimer();return;}
+ if(t.id==='tgGoal'&&e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();$('[data-act="tg-make"]').click();return;}
+ if(t.id==='wkIn'){if(e.key==='Escape'){S.ui.wkAdd=null;render();return;}if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();const v=t.value.trim();if(v){const p=parse(v);S.tasks.push(newTask({title:p.title||v,cat:p.cat,date:t.dataset.d,est:p.est||30}));save();}S.ui.wkAdd=null;render();}return;}
+ if(t.classList?.contains('item')&&e.altKey&&(e.key==='ArrowUp'||e.key==='ArrowDown')){e.preventDefault();const sib=[...t.closest('.grp').querySelectorAll('.item')],k=sib.indexOf(t),n=sib[k+(e.key==='ArrowUp'?-1:1)];if(!n)return;const x=task(t.dataset.id),y=task(n.dataset.id);if(t.closest('.grp').dataset.g==='L'&&x.date!==y.date){x.date=y.date;x.week=y.week||null;toast('已改到 '+dayLabel(x.date));}S.tasks=S.tasks.filter(z=>z!==x);S.tasks.splice(S.tasks.indexOf(y)+(e.key==='ArrowUp'?0:1),0,x);save();renderSide();$(`.item[data-id="${x.id}"]`)?.focus();return;}
+ if(t.classList?.contains('item')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();taskDialog(t.dataset.id);}
+});
+$('#scrim').addEventListener('click',()=>document.body.classList.remove('nav-open'));
+function toggleSide(){if(innerWidth<=760){document.body.classList.toggle('nav-open');return;}document.body.classList.toggle('c');$('#sbOpen').hidden=!document.body.classList.contains('c');}
+dlg.addEventListener('close',()=>{pendingImport=null;});
+
+/* ---- 拖拽：侧栏分组与本周列 ---- */
+let drag=null,wd=null;
+const clr=()=>$$('.over,.over-after,.drag').forEach(x=>x.classList.remove('over','over-after','drag'));
+document.addEventListener('dragstart',e=>{const c=e.target.closest?.('.wc'),i=e.target.closest?.('.item');
+ if(c){wd=c.dataset.w;c.classList.add('drag');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',wd);return;}
+ if(i){drag=i.dataset.id;i.classList.add('drag');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',drag);}});
+const below=(e,i)=>{const r=i.getBoundingClientRect();return e.clientY>r.top+r.height/2;};
+document.addEventListener('dragover',e=>{if(!drag&&!wd)return;e.preventDefault();$$('.over,.over-after').forEach(x=>x.classList.remove('over','over-after'));if(wd){e.target.closest('.wcol')?.classList.add('over');return;}const i=e.target.closest('.item');if(i&&i.dataset.id!==drag){i.classList.add(below(e,i)?'over-after':'over');return;}e.target.closest('.grp')?.classList.add('over');});
+document.addEventListener('drop',e=>{
+ if(wd){e.preventDefault();const w=e.target.closest('.wcol'),x=task(wd);if(w&&x&&x.date!==w.dataset.d){x.date=w.dataset.d;save();toast('已移到 '+dayLabel(x.date));render();}wd=null;clr();return;}
+ if(!drag)return;e.preventDefault();const i=e.target.closest('.item'),g=e.target.closest('.grp');const x=task(drag);
+ if(x){const t=today();const grp=(i?i.closest('.grp'):g)?.dataset.g;
+  if(grp==='P')x.pin=true;else if(grp==='T'){x.pin=false;if(x.date!==t&&!(x.date<t&&!x.done))x.date=t;}else if(grp==='L'){x.pin=false;if(x.date<=t)x.date=addDays(t,1);}
+  const tgt=i&&i.dataset.id!==x.id?task(i.dataset.id):null;if(tgt&&grp==='L'&&x.date!==tgt.date){x.date=tgt.date;x.week=tgt.week||null;toast('已改到 '+dayLabel(x.date));}
+  S.tasks=S.tasks.filter(y=>y!==x);const at=tgt?S.tasks.indexOf(tgt)+(below(e,i)?1:0):-1;if(at>=0)S.tasks.splice(at,0,x);else S.tasks.push(x);save();renderSide();if(view!=='today')render();}
+ drag=null;clr();});
+document.addEventListener('dragend',()=>{drag=null;wd=null;clr();});
+
+/* ---- 其他标签页改了数据 ---- */
+window.addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;try{const ui=S.ui;S=normalize(JSON.parse(e.newValue));S.ui=ui;render();}catch(err){}});
+
+/* ================= 启动 ================= */
+load();
+const h=(location.hash||'').slice(1);if(VIEWS.includes(h))view=h;
+render();
+setInterval(tick,500);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
+})();
+</script>
+
+</body>
+</html>

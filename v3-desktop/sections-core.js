@@ -1,0 +1,14 @@
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.TPlanSections=factory();})(typeof globalThis==='object'?globalThis:this,function(){
+ 'use strict';
+ const clone=s=>JSON.parse(JSON.stringify(s));
+ function sections(s){return Array.isArray(s.settings?.taskSections)?s.settings.taskSections.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'):[];}
+ function name(value,s,except){const n=String(value||'').trim().replace(/\s+/g,' ');if(!n)throw Error('请填写分区名称');if(n.length>40)throw Error('分区名称最多 40 个字');if(sections(s).some(x=>x.id!==except&&x.name.toLocaleLowerCase()===n.toLocaleLowerCase()))throw Error('已有同名分区，换一个名称吧');return n;}
+ function create(s,value,id){const n=name(value,s);if(sections(s).length>=40)throw Error('最多创建 40 个分区');if(!id||sections(s).some(x=>x.id===id))throw Error('分区编号无效');const next=clone(s);next.settings.taskSections=[...sections(next),{id,name:n,collapsed:false}];return next;}
+ function update(s,id,patch){const next=clone(s),item=sections(next).find(x=>x.id===id);if(!item)throw Error('分区已不存在');if(patch.name!==undefined)item.name=name(patch.name,next,id);if(patch.collapsed!==undefined)item.collapsed=!!patch.collapsed;return next;}
+ function assign(s,ids,id){if(id&&!sections(s).some(x=>x.id===id))throw Error('分区已不存在');const unique=[...new Set(ids)];if(unique.some(id=>!s.tasks.some(t=>t.id===id)))throw Error('部分任务已不存在，请重新选择');const next=clone(s);for(const t of next.tasks)if(unique.includes(t.id)){if(id)t.sectionId=id;else delete t.sectionId;}return next;}
+ function remove(s,id){if(!sections(s).some(x=>x.id===id))throw Error('分区已不存在');const next=assign(s,s.tasks.filter(t=>t.sectionId===id).map(t=>t.id),null);next.settings.taskSections=sections(next).filter(x=>x.id!==id);return next;}
+ function reorder(s,id,offset){const next=clone(s),list=sections(next),at=list.findIndex(x=>x.id===id);if(at<0)throw Error('分区已不存在');const to=Math.max(0,Math.min(list.length-1,at+offset));list.splice(to,0,list.splice(at,1)[0]);next.settings.taskSections=list;return next;}
+ function groupOrder(s){const valid=['P','T','L',...sections(s).map(x=>'section:'+x.id)],saved=Array.isArray(s.settings.sidebarTaskOrder)?s.settings.sidebarTaskOrder:[];return [...new Set([...saved.filter(k=>valid.includes(k)),...valid])];}
+ function moveGroup(s,key,target,after=false){const order=groupOrder(s);if(!order.includes(key)||!order.includes(target))throw Error('分组已不存在');const next=clone(s);if(key===target)return next;order.splice(order.indexOf(key),1);order.splice(order.indexOf(target)+(after?1:0),0,key);next.settings.sidebarTaskOrder=order;if(sections(next).length)next.settings.taskSections=sections(next).sort((a,b)=>order.indexOf('section:'+a.id)-order.indexOf('section:'+b.id));return next;}
+ return {sections,create,update,assign,remove,reorder,groupOrder,moveGroup};
+});

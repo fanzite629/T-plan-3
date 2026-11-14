@@ -1,0 +1,15 @@
+{
+  "name": "tplan-local-map",
+  "version": "1.10.0",
+  "private": true,
+  "description": "Build-only local LogicFlow bundle for T计划",
+  "scripts": {
+    "bundle:map": "node bundle-map.cjs"
+  },
+  "dependencies": {
+    "@logicflow/core": "2.2.5"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  }
+}

@@ -1,0 +1,21 @@
+const fs=require('fs'),path=require('path'),assert=require('node:assert/strict'),{execFileSync}=require('child_process');
+const {chromium}=require('C:/Users/fanzi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const out=path.resolve(__dirname,'../output/playwright/task-timer');
+const pwsh='C:/Users/fanzi/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe';
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const probe=(action='inspect',extra=[])=>JSON.parse(execFileSync(pwsh,['-NoProfile','-File',path.join(__dirname,'task-timer-floating-uia.ps1'),'-TPlanPid',process.env.TIMER_TEST_PID,'-Action',action,...extra],{encoding:'utf8',windowsHide:true}));
+const seconds=t=>t.split(':').reduce((n,v)=>n*60+Number(v),0);
+(async()=>{
+ const b=await chromium.connectOverCDP(process.env.TIMER_CDP||'http://127.0.0.1:58424'),p=b.contexts()[0].pages().find(p=>p.url().includes('tplan.local'));await p.locator('#app h1').waitFor();const errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.clock.setSystemTime(new Date());
+ const click=a=>p.locator('[data-timer="'+a+'"]').click();
+ const state=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('tgrowth.v1')));
+ const fill=async(title,minutes,offset)=>{await p.locator('#tt-title').fill(title);await p.locator('#tt-minutes').fill(String(minutes));const d=new Date(Date.now()+offset);await p.locator('#tt-cutoff').fill(new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16));await click('start');};
+ const compare=async()=>{const mini=probe(),main=await p.locator('#tt-clock').textContent();assert.ok(Math.abs(seconds(main)-seconds(mini.Clock))<=2,JSON.stringify({main,mini}));return mini;};
+ await p.locator('nav [data-page="timer"]').click();await fill('合成：上一轮30分钟',30,7200000);await click('mini');await sleep(500);assert.ok(seconds((await compare()).Clock)>1700);probe('restore');await click('finish');await click('decide');
+ await fill('继续学习计算机网络第一章',45,7200000);const session=(await state()).timerBoard.active;assert.equal(session.budgetMs,2700000);await click('mini');await sleep(400);const fresh=await compare();assert.ok(seconds(fresh.Clock)>2600);assert.equal(fresh.Topmost,true);assert.ok(fresh.Bounds[2]<=300&&fresh.Bounds[3]<=150);console.log('PASS early finish30 then new45: native/page show current session immediately, compact topmost window');
+ probe('inspect',['-Screenshot',path.join(out,'compact-floating.png')]);const paused=probe('pause');assert.match(paused.Status,/已暂停/);await sleep(1200);assert.equal(probe().Clock,paused.Clock);await compare();probe('pause');probe('restore');await click('finish');await click('decide');
+ await fill('底线先到 · 45分钟预算',45,180000);await click('mini');await sleep(500);const limited=await compare();assert.ok(seconds(limited.Clock)<=180);assert.match(limited.Status,/底线先到/);assert.equal(await p.locator('#tt-cutoff-note').isVisible(),true);console.log('PASS reproduction: 45 minute budget with earlier cutoff displays same real available time in both windows and explains cutoff');
+ const limitedPause=probe('pause');await sleep(1100);assert.equal(probe().Clock,limitedPause.Clock);await compare();probe('pause');probe('restore');await click('finish');await click('decide');await fill('第三轮 · 全新15分钟',15,7200000);await click('mini');await sleep(500);assert.ok(seconds((await compare()).Clock)>850);console.log('PASS shorter next session, pause/resume and reused native window stay synchronized');
+ const closed=probe('close');assert.equal(closed.MiniVisible,false);assert.equal(closed.MainMinimized,false);assert.deepEqual(errors,[]);fs.writeFileSync(path.join(out,'compact-results.json'),JSON.stringify({status:'PASS',fresh,limited,errors},null,2));await b.close();
+})().catch(e=>{console.error(e);process.exit(1);});

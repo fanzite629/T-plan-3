@@ -1,0 +1,19 @@
+/* Pure decision-tree validation and schedule previews. Applying returns a copy. */
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./planning-core.js'));else root.TPlanTree=factory(root.TPlanPlanning);})(typeof globalThis==='object'?globalThis:this,function(P){
+ 'use strict';
+ const fail=m=>{throw Error(m);};
+ function walk(n,fn,parent=null){fn(n,parent);for(const k of n.kids)walk(k,fn,n);}
+ function find(tr,id){let result=[null,null];walk(tr.root,(n,p)=>{if(n.id===id)result=[n,p];});return result;}
+ function validate(tr){if(!P.validDate(tr.start))fail('请选择有效的起始日期');let count=0;const ids=new Set();
+  (function check(n,depth,parent){if(!n||!Array.isArray(n.kids)||!n.id||ids.has(n.id))fail('节点结构或编号无效');ids.add(n.id);if(++count>80||depth>8)fail('最多支持 80 个节点、8 层步骤，请先简化这棵树');if(typeof n.title!=='string'||!n.title.trim()||n.title.length>150)fail('内容需为 1–150 个字');if(!['goal','step','check'].includes(n.kind)||(!parent&&n.kind!=='goal')||(parent&&n.kind==='goal'))fail('节点类型无效');if(!Number.isInteger(n.day)||n.day<0||n.day>59)fail('第几天需为 1–60 的整数');if(n.kind==='step'&&(!Number.isInteger(n.min)||n.min<1||n.min>600))fail('预计时长需为 1–600 分钟的整数');if(n.kind==='check'&&(n.kids.length<2||n.kids.length>4))fail('每个检查点需要 2–4 个分支');if(n.kind!=='check'&&n.kids.length>1)fail('普通步骤只能有一个下一步');if(parent?.kind==='check'&&(!n.cond?.trim()||n.cond.length>120))fail('请填写分支条件，最多 120 个字');n.kids.forEach(k=>check(k,depth+1,n));})(tr.root,1,null);return count;
+ }
+ function path(tr){const result=[];let n=tr.root.kids[0];while(n){result.push(n);if(n.kind==='check'){const i=tr.chosen?.[n.id]??tr.pick?.[n.id]??0;if(!Number.isInteger(i)||!n.kids[i])fail('选中的分支已变化，请重新选择');n=n.kids[i];}else n=n.kids[0];}return result;}
+ function fingerprint(state,tr,start,date){return JSON.stringify([tr.root,tr.pick,tr.chosen,tr.added,start,date,state.tasks.filter(t=>t.tree?.id===tr.id).map(t=>[t.id,t.done])]);}
+ function preview(state,tid,options={}){const source=state.trees.find(t=>t.id===tid);if(!source)fail('这棵树已经不存在');const tr=P.clone(source);tr.added=tr.added||{};tr.pick=tr.pick||{};tr.chosen=tr.chosen||{};const date=options.today,start=options.start||tr.start;if(!P.validDate(date))fail('当前日期无效');tr.start=start;validate(tr);
+  if(options.branch){const {node,index}=options.branch,[n]=find(tr,node);if(!n||n.kind!=='check'||!Number.isInteger(index)||!n.kids[index])fail('分支已经变化，请重新选择');if(node in tr.chosen&&tr.chosen[node]!==index)fail('这个检查点已有确认结果');const task=state.tasks.find(t=>t.id===tr.added[node]);if(!task?.done)fail('请先完成这个检查点任务，再确认结果');tr.chosen[node]=index;tr.pick[node]=index;}
+  const nodes=path(tr),items=[];let stop=null;for(const n of nodes){const existing=tr.added[n.id]&&state.tasks.some(t=>t.id===tr.added[n.id]);if(!existing){const planned=P.addDays(start,n.day);if(!P.validDate(planned))fail('步骤日期超出支持范围');items.push({node:n.id,title:n.kind==='check'?'检查点：'+n.title:n.title,minutes:n.kind==='check'?10:n.min,date:planned<date?date:planned,shifted:planned<date,check:n.kind==='check'});}if(n.kind==='check'&&!(n.id in tr.chosen)){stop=n;break;}}
+  return {tree:tr,items,stop,total:items.reduce((a,x)=>a+x.minutes,0),fingerprint:fingerprint(state,source,start,date)};
+ }
+ function apply(state,tid,options={}){const batch=preview(state,tid,options);if(options.basis&&options.basis!==batch.fingerprint)fail('步骤或任务状态已变化，请重新检查预览');const next=P.clone(state),tr=next.trees.find(t=>t.id===tid);tr.start=batch.tree.start;tr.pick=batch.tree.pick;tr.chosen=batch.tree.chosen;tr.added=batch.tree.added;const added=[];for(const item of batch.items){const task=options.makeTask(item,tr);if(!task||!task.id||next.tasks.some(t=>t.id===task.id))fail('任务编号无效');next.tasks.push(task);tr.added[item.node]=task.id;added.push(task.id);}return {state:next,added,batch};}
+ return {walk,find,validate,path,preview,apply};
+});

@@ -1,0 +1,24 @@
+const assert=require('node:assert/strict'),fs=require('fs'),path=require('path');
+const {chromium}=require('C:/Users/fanzi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+(async()=>{
+ const b=await chromium.connectOverCDP(process.env.TPLAN_TEST_CDP||'http://127.0.0.1:58432'),p=b.contexts()[0].pages().find(p=>p.url().includes('tplan.local'));
+ await p.setViewportSize({width:1440,height:1000});await p.locator('nav [data-page="timer"]').click();
+ const state=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('tgrowth.v1')));
+ await p.locator('#tt-title').fill('合成验收：独立验收可点击');await p.locator('#tt-criterion').fill('独立画出数据传输过程');
+ await p.locator('.tt-resource-entry [data-resource="open"]').click();await p.locator('[data-resource="verify"]').click();
+ assert.match(await p.locator('.lr-verification').textContent(),/独立画出数据传输过程/);
+ assert.equal((await state()).timerBoard.active,null);
+ await p.locator('.lr-verification [data-resource="tool"]').click();await p.locator('[data-card="gpt"]').click();
+ await p.locator('[data-resource="verify"]').click();assert.equal(await p.locator('[data-resource="verify"]').getAttribute('aria-current'),'step');assert.match(await p.locator('.lr-verification').textContent(),/当前问题的停止条件/);
+ const before=await state();await p.reload();await p.locator('nav [data-page="timer"]').click();assert.equal(await p.locator('.lr-verification').count(),1);assert.deepEqual(await state(),before);
+ await p.locator('.lr-verification [data-resource="tool"]').click();assert.equal(await p.locator('#lr-tool-title').textContent(),'GPT');
+ await p.locator('[data-resource="verify"]').focus();await p.keyboard.press('Enter');assert.equal(await p.locator('.lr-verification').count(),1);
+ await p.locator('.lr-verification [data-resource="return"]').click();assert.equal(await p.locator('.lr-verification').count(),0);assert.deepEqual(await state(),before);
+ await p.locator('[data-timer="budget-cutoff"]').click();await p.locator('[data-timer="start"]').click();
+ const active=await state();await p.locator('.tt-resource-entry [data-resource="open"]').click();await p.locator('[data-resource="verify"]').click();assert.deepEqual(await state(),active);assert.equal((await state()).timerBoard.active.phase,'running');
+ await p.locator('#learning-resources').screenshot({path:path.resolve(__dirname,'../output/playwright/workbench/independent-check.png')});
+ await p.locator('[data-timer="finish"]').click();await p.locator('#tt-blocker').fill('等待自行核验');await p.locator('[data-resource="select"]').click();await p.locator('[data-resource="verify"]').click();assert.equal(await p.locator('#tt-blocker').inputValue(),'等待自行核验');
+ await p.locator('[data-timer="decide"]').click();
+ console.log('PASS step 3 click/keyboard, current criterion, card return, refresh restores verification, no auto timer/effort/task mutation, review input survives step switching');
+ fs.writeFileSync(path.resolve(__dirname,'../output/playwright/workbench/independent-check-results.json'),JSON.stringify({status:'PASS',checks:7},null,2));await b.close();
+})().catch(e=>{console.error(e);process.exit(1)});
