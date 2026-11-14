@@ -22,11 +22,16 @@ internal sealed class AiGateway : IDisposable
     {
         if(pending.Count > 0) throw new InvalidOperationException("已有请求正在生成，请稍候或取消。");
         if(system.Length > 20000 || user.Length > 100000) throw new InvalidOperationException("请求内容过长，请缩小范围。");
-        var state=json.Deserialize<Dictionary<string,object>>(db.Read("tplan.v3"));
-        var settings=(Dictionary<string,object>)state["settings"];
+        string saved=db.Read("tplan.v3");
+        if(String.IsNullOrWhiteSpace(saved))throw new InvalidOperationException("请先在 T计划的数据与设置中填写模型与接口。");
+        var state=json.Deserialize<Dictionary<string,object>>(saved);
+        if(state==null||!state.ContainsKey("settings"))throw new InvalidOperationException("请先填写模型与接口设置。");
+        var settings=state["settings"] as Dictionary<string,object>;
+        if(settings==null)throw new InvalidOperationException("模型设置格式不正确，请在设置中重新填写。");
         object value;
         if(!settings.TryGetValue("agent",out value))throw new InvalidOperationException("请先填写模型与接口设置。");
-        var cfg=(Dictionary<string,object>)value;
+        var cfg=value as Dictionary<string,object>;
+        if(cfg==null)throw new InvalidOperationException("模型设置格式不正确，请在设置中重新填写。");
         bool anthropic=Str(cfg,"provider")=="anthropic";
         string model=Str(cfg,"modelId").Trim(),key=db.ReadSecret();
         if(model.Length==0)throw new InvalidOperationException("请填写服务商的模型名称。");

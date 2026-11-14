@@ -55,3 +55,13 @@ output/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local promotional-video projects (captures, rendered media, fonts, caches)
+/videos/
+
+# Earlier ChatGPT pet-generation experiments, not used by the desktop app
+/designs/Pets/
+
+# Desktop companion preferences and conversation history
+pet-settings.json
+pet-chat.json

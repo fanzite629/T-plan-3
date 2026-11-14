@@ -1,6 +1,6 @@
 # T计划 / T成长 · 完整项目源码
 
-本仓库收录 T计划的桌面版、网页版本、独立原型、构建脚本与测试。当前日常使用的 **T计划 v3.8** 源码位于 [`v3-desktop/`](v3-desktop/README.md)，包含 AI 提议、决策树、周安排、复盘、任务分区、黑白灰界面、计时小窗和侧栏分组拖动。
+本仓库收录 T计划的桌面版、网页版本、独立原型、构建脚本与测试。当前日常使用的 **T计划 v3.12** 源码位于 [`v3-desktop/`](v3-desktop/README.md)，包含 AI 提议、决策树、周安排、复盘、任务分区、黑白灰界面、计时小窗、侧栏分组拖动和支持步行、眨眼、呼吸及随计时切换学习/休息动作、连续帧衔接的橙橙桌宠学习助理。
 
 | 目录或入口 | 内容 |
 | --- | --- |
@@ -14,6 +14,15 @@
 仓库保留业务源码和开发文档；个人 SQLite 数据库、API 密钥、浏览器配置、备份与导出文件、测试产物、安装包、`node_modules` 和 WebView2 二进制依赖由 `.gitignore` 排除。依赖来源见 [`desktop/vendor/PROVENANCE.md`](desktop/vendor/PROVENANCE.md)。部分历史验收脚本包含开发机路径，跨机器运行前需调整。
 
 当前桌面版的构建与测试方式见 [`v3-desktop/README.md`](v3-desktop/README.md)。旧网页版可直接打开根目录 `index.html`；若需重新打包任务地图依赖，先运行 `npm ci`，再运行 `npm run bundle:map`。
+
+获取本仓库源码：
+
+```powershell
+git clone https://github.com/fanzite629/T-plan-3.git
+cd T-plan-3
+```
+
+`designs/` 保留桌宠的设计素材、动画预览及来源说明；本地宣传视频、录屏缓存和封面制作工程不随软件源码上传。
 
 ---
 

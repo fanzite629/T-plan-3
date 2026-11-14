@@ -17,6 +17,7 @@ internal sealed class MainWindow : Form
     readonly JavaScriptSerializer json = new JavaScriptSerializer { MaxJsonLength = 2100000 };
     readonly AiGateway ai;
     TimerMiniWindow mini;
+    CompanionWindow pet;
     bool closing, polling;
     FormWindowState restoreState = FormWindowState.Normal;
 
@@ -37,7 +38,8 @@ internal sealed class MainWindow : Form
             catch { /* Navigation and shutdown may interrupt one poll. The next snapshot catches up. */ }
             finally { polling = false; }
         };
-        FormClosing += delegate { closing = true; poll.Stop(); ai.Dispose(); };
+        Resize += delegate { if(WindowState!=FormWindowState.Minimized)restoreState=WindowState; };
+        FormClosing += delegate { closing = true; poll.Stop(); if(pet!=null)pet.ShutDown(); ai.Dispose(); };
         FormClosed += delegate { poll.Dispose(); if(mini != null) mini.ShutDown(); web.Dispose(); };
     }
 
@@ -73,7 +75,16 @@ internal sealed class MainWindow : Form
                 }
             };
             core.WebMessageReceived += OnTimerMessage;
-            core.NavigationCompleted += delegate { if(!closing) poll.Start(); };
+            core.NavigationCompleted += delegate {
+                if(closing)return;
+                poll.Start();
+                if(pet==null){
+                    var agent=new CompanionAgent(ai,GetCompanionContext);
+                    pet=new CompanionWindow(root,Icon,agent,OpenCompanionDraft,ReturnToTimer,SendCommand);
+                    pet.StateChanged+=WritePetSnapshot;
+                }
+                WritePetSnapshot();
+            };
             core.Navigate("https://tplan-v3.local/index.html");
         } catch(Exception ex) { if(!closing) { MessageBox.Show(this, "启动失败：" + ex.Message); Close(); } }
     }
@@ -86,6 +97,10 @@ internal sealed class MainWindow : Form
         object raw;
         if(data == null || !data.TryGetValue("kind", out raw)) return;
         string kind = Convert.ToString(raw);
+        if(kind=="pet-control"){
+            string action=data.TryGetValue("action",out raw)?Convert.ToString(raw):"";
+            if(pet!=null&&action.Length<32){pet.Control(action);WritePetSnapshot();}return;
+        }
         if(kind == "ai-request" || kind == "ai-cancel") {
             string id=data.TryGetValue("id",out raw)?Convert.ToString(raw):"";
             if(id.Length==0 || id.Length>100)return;
@@ -105,6 +120,7 @@ internal sealed class MainWindow : Form
         string phase = data.TryGetValue("phase", out raw) ? Convert.ToString(raw) : "ready";
         if(phase != "ready" && phase != "running" && phase != "paused" && phase != "due" && phase != "ended") return;
         if(mini != null) mini.UpdateSnapshot(data);
+        if(pet != null){pet.UpdateSnapshot(data);WritePetSnapshot();}
         if(phase == "ready" || phase == "ended") {
             if(mini != null && mini.Visible) ReturnToTimer();
             return;
@@ -134,4 +150,12 @@ internal sealed class MainWindow : Form
         Show(); WindowState = restoreState; Activate();
         if(web.CoreWebView2 != null) web.CoreWebView2.PostWebMessageAsString("timer:show");
     }
+    System.Threading.Tasks.Task<string> GetCompanionContext(){return web.CoreWebView2.ExecuteScriptAsync("window.tplanPetContext ? window.tplanPetContext() : null");}
+    async System.Threading.Tasks.Task<string> OpenCompanionDraft(Dictionary<string,object> draft,string id,string prompt)
+    {
+        if(closing||web.CoreWebView2==null)throw new InvalidOperationException("主界面暂不可用，请稍后重试。");
+        string result=await web.CoreWebView2.ExecuteScriptAsync("window.tplanPetDraft ? window.tplanPetDraft("+json.Serialize(draft)+","+json.Serialize(id)+","+json.Serialize(prompt)+") : ({ok:false,error:'界面仍在加载'})");
+        Show();WindowState=restoreState;Activate();return result;
+    }
+    void WritePetSnapshot(){if(pet==null||closing||Environment.GetEnvironmentVariable("TPLAN_V3_QA")!="1")return;string state=json.Serialize(pet.Snapshot());File.WriteAllText(Path.Combine(root,"pet-state.json"),state);}
 }

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>橙橙 · 原画动作预览</title>
+<style>
+:root{font-family:"Microsoft YaHei UI",sans-serif;color:#262626;background:#f5f4f1}*{box-sizing:border-box}body{margin:0;padding:32px}main{max-width:1000px;margin:auto;display:grid;grid-template-columns:minmax(260px,1fr) 320px;gap:32px;align-items:center}h1{font-size:28px;margin:8px 0 16px}p{line-height:1.8;color:#626262}.stage{border:1px solid #ddd9d2;border-radius:24px;background:repeating-conic-gradient(#eee 0 25%,#fafafa 0 50%) 50%/24px 24px;overflow:hidden}.stage.dark{background:#242424}canvas{width:100%;height:auto;max-height:78vh;object-fit:contain;display:block}button,select{font:inherit;border:1px solid #ccc7bd;border-radius:10px;padding:10px 14px;background:white;color:#262626;cursor:pointer}button.active{background:#262626;color:white;border-color:#262626}nav{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}.controls{display:grid;gap:14px}.controls label{display:flex;gap:10px;align-items:center}output{display:block;font-variant-numeric:tabular-nums;color:#727272;margin:16px 0;font-size:13px}a{color:inherit}small{line-height:1.8;color:#777}@media(max-width:700px){body{padding:18px}main{grid-template-columns:1fr;gap:16px}.stage canvas{max-height:56vh}}
+</style>
+<main><div class="stage" id="stage"><canvas id="art" width="640" height="872" aria-label="橙橙原画动画"></canvas></div><section>
+<small>T计划 · 3.10 动作预览</small><h1>她开始走路了。</h1><p>保留橙橙的详细形象。待机沿用完整原图；走路时切换双腿、裙摆与发丝的八帧动作。</p>
+<nav aria-label="动作选择"><button class="active" data-mode="idle">原画待机</button><button data-mode="left">向左走</button><button data-mode="right">向右走</button></nav>
+<div class="controls"><label><input id="blink" type="checkbox" checked>自然眨眼</label><label><input id="breath" type="checkbox" checked>轻微呼吸</label><label><input id="dark" type="checkbox">深色背景</label><div><button id="pause">暂停预览</button> <button id="step">下一帧</button></div></div>
+<output id="status" aria-live="off">正在加载原画与动作…</output><small>这是素材预览；实际桌宠会随窗口位移迈步，到达边缘或停止后回到待机。<br><a href="PROMPTS.md">查看生成与导入说明</a></small>
+</section></main>
+<script>
+const canvas=document.querySelector('#art'),g=canvas.getContext('2d'),status=document.querySelector('#status');
+const images={},base='../../v3-desktop/companion-assets/';let mode='idle',playing=true,clock=0,last=0;
+async function load(name){const im=new Image();im.src=base+name+'.png';await im.decode();images[name]=im;}
+function render(){g.clearRect(0,0,640,872);if(mode==='idle'){
+ const breath=document.querySelector('#breath').checked?2.88*(1-Math.cos(clock/4200*Math.PI*2))/2:0,blink=document.querySelector('#blink').checked&&clock%4700>4380&&clock%4700<4530;
+ const im=images.original,cut=1536*.64,ch=768*.64;
+ if(breath<.001)g.drawImage(im,64,100,512,768);else{g.drawImage(im,0,0,1024,cut,64,100-breath,512,ch);g.drawImage(im,0,cut,1024,1536-cut,64,100+ch-breath,512,768-ch+breath);}
+ if(blink){g.save();g.beginPath();g.rect(64+380/2,100-breath+324/2,148/2,108/2);g.rect(64+530/2,100-breath+273/2,146/2,118/2);g.clip();g.drawImage(images['blink-eyes'],64,100-breath,512,768);g.restore();}
+ status.textContent='原图待机 · '+(blink?'闭眼':'睁眼')+' · 脚底固定';
+ }else{const frame=Math.floor(clock/(1000*.34/.36)*8)%8;g.drawImage(images['walk-'+mode+'-'+String(frame).padStart(2,'0')],0,68);status.textContent=(mode==='left'?'向左':'向右')+'步行 · 第 '+(frame+1)+' / 8 帧';}}
+function tick(now){if(playing&&last)clock+=Math.min(80,now-last);last=now;render();requestAnimationFrame(tick);}
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;clock=0;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));});
+document.querySelector('#dark').onchange=e=>document.querySelector('#stage').classList.toggle('dark',e.target.checked);
+document.querySelector('#pause').onclick=e=>{playing=!playing;e.target.textContent=playing?'暂停预览':'继续预览';};
+document.querySelector('#step').onclick=()=>{playing=false;document.querySelector('#pause').textContent='继续预览';clock+=mode==='idle'?100:1000*.34/.36/8;render();};
+Promise.all(['original','blink-eyes',...['left','right'].flatMap(d=>Array.from({length:8},(_,i)=>'walk-'+d+'-'+String(i).padStart(2,'0')))].map(load)).then(()=>requestAnimationFrame(tick)).catch(()=>{status.textContent='素材加载失败，请将预览与项目资源保存在原目录中。';});
+</script></html>

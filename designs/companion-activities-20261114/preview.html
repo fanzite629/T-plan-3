@@ -1,0 +1,21 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>橙橙 · 学习与休息动作</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:32px;background:#f5f4f1;color:#272727;font:15px/1.75 "Microsoft YaHei UI",sans-serif}main{max-width:1100px;margin:auto}h1{margin:8px 0 4px;font-size:30px}p{color:#737373;margin:4px 0 20px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.card{background:white;border:1px solid #ddd9d2;border-radius:20px;overflow:hidden}.art{background:repeating-conic-gradient(#eee 0 25%,#fafafa 0 50%) 50%/20px 20px}.dark .art{background:#232323}canvas{display:block;width:100%;height:auto}.info{padding:16px 20px}h2{font-size:19px;margin:0}.info p{font-size:13px;margin:5px 0 0}.toolbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:24px 0}button{font:inherit;border:1px solid #ccc7bd;border-radius:10px;padding:8px 16px;background:white;color:#262626;cursor:pointer}button:first-child{background:#292929;color:white;border-color:#292929}small,output{color:#787878}a{color:inherit}.state{padding:16px 20px;background:#eae8e2;border-radius:12px;margin:24px 0 14px}@media(max-width:700px){body{padding:16px}.cards{grid-template-columns:1fr}.art canvas{height:55vh;object-fit:contain}.toolbar{gap:8px}}
+</style><main><small>T计划 3.11 · 原画陪伴动作</small><h1>一起学习，也一起歇一会儿。</h1><p>保留橙橙的脸型、橙色长发、花饰、层叠裙装和书本细节。</p>
+<div class="cards">
+<section class="card"><div class="art"><canvas data-name="study" width="640" height="800" aria-label="伏案写笔记四帧动画"></canvas></div><div class="info"><h2>学习 · 写笔记</h2><p>开始或继续计时，自动进入学习。停笔、落笔，专注眼前这一页。</p></div></section>
+<section class="card"><div class="art"><canvas data-name="read" width="640" height="800" aria-label="捧书翻页四帧动画"></canvas></div><div class="info"><h2>看书 · 翻书页</h2><p>右键“陪伴动作”选择看书，捧书阅读并轻轻翻页。</p></div></section>
+<section class="card"><div class="art"><canvas data-name="rest" width="640" height="800" aria-label="坐着放松四帧动画"></canvas></div><div class="info"><h2>休息 · 放松一下</h2><p>暂停、到时或结束后休息。合上书，放松肩膀，轻轻闭眼。</p></div></section>
+</div><div class="toolbar"><button id="pause">暂停预览</button><button id="step">逐帧查看</button><label><input id="dark" type="checkbox">深色背景</label><output id="status">正在加载动作素材…</output></div>
+<div class="state">开始 / 继续 → 学习　·　暂停 / 到时 / 结束 → 休息　·　保存记录后保持休息</div>
+<small>这是动画素材预览。软件中可在右键“陪伴动作”手动选择动作，也可关闭“跟随计时自动切换”。原图未改动，新动作由内置图像编辑工具参考原图制作。<a href="PROMPTS.md">生成提示词</a> · <a href="REVISIONS.md">修订与素材路径</a></small></main>
+<script>
+const names=['study','read','rest'],images={},times={study:[850,220,500,220],read:[2200,350,400,250],rest:[2000,500,1200,500]};let running=true,clock=0,last=0,stepped=null;
+async function load(name,i){const im=new Image();im.src='../../v3-desktop/companion-assets/activity-'+name+'-'+String(i).padStart(2,'0')+'.png';await im.decode();(images[name]??=[])[i]=im;}
+function frame(name){if(stepped!==null)return stepped;let t=clock%times[name].reduce((a,b)=>a+b,0);for(let i=0;i<4;i++){if(t<times[name][i])return i;t-=times[name][i];}return 0;}
+function draw(now){if(running&&last)clock+=Math.min(80,now-last);last=now;for(const c of document.querySelectorAll('canvas')){const g=c.getContext('2d'),name=c.dataset.name;g.clearRect(0,0,640,800);g.drawImage(images[name][frame(name)],0,0);}document.querySelector('#status').textContent=stepped===null?'三组动作 · 各 4 帧循环':'第 '+(stepped+1)+' / 4 帧';requestAnimationFrame(draw);}
+document.querySelector('#pause').onclick=e=>{running=!running;stepped=null;e.target.textContent=running?'暂停预览':'继续预览';};
+document.querySelector('#step').onclick=()=>{running=false;stepped=stepped===null?0:(stepped+1)%4;document.querySelector('#pause').textContent='继续预览';};
+document.querySelector('#dark').onchange=e=>document.body.classList.toggle('dark',e.target.checked);
+Promise.all(names.flatMap(n=>Array.from({length:4},(_,i)=>load(n,i)))).then(()=>requestAnimationFrame(draw)).catch(()=>document.querySelector('#status').textContent='素材加载失败，请保留项目目录结构。');
+</script></html>

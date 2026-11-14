@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 using System.Runtime.InteropServices;
@@ -8,8 +8,8 @@ using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
-[assembly:AssemblyVersion("3.8.0.0")]
-[assembly:AssemblyFileVersion("3.8.0.0")]
+[assembly:AssemblyVersion("3.12.0.0")]
+[assembly:AssemblyFileVersion("3.12.0.0")]
 [ComVisible(true), ClassInterface(ClassInterfaceType.AutoDual)]
 public class Database : IDisposable {
  IntPtr db;
